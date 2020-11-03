@@ -99,7 +99,7 @@ CAutomata::ConversionTableDFA CAutomata::ToDFA()
 	return table;
 }
 
-std::string CAutomata::ToGraph()
+std::string CAutomata::DFAToGraph()
 {
 	auto table = m_DFATable;
 	CDotWriter writer;

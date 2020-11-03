@@ -14,7 +14,7 @@ public:
 
 	ConversionTableDFA ToDFA();
 
-	std::string ToGraph();
+	std::string DFAToGraph();
 
 private:
 	void AddNewStatesToTable(CAutomata::ConversionTableDFA& table, std::map<unsigned, std::vector<unsigned>> const& newStates, unsigned& newState);

@@ -1,15 +1,16 @@
 ﻿#include "Automata.h"
 #include <iostream>
 
-void SaveImage(CAutomata& automata, std::string fileName)
+void SaveImage(CAutomata& automata, std::string const& fileName)
 {
-	const std::string& dotName = fileName + ".dot";
-	const std::string& imageName = fileName + ".png";
+	const std::string pathToDot = "../../../Graphviz/bin/";
+	const std::string dotName = fileName + ".dot";
+	const std::string imageName = fileName + ".png";
 
 	std::ofstream dotFile(dotName);
-	dotFile << automata.ToGraph();
+	dotFile << automata.DFAToGraph();
 	dotFile.close();
-	std::string command = "dot -Tpng -o " + imageName + " " + dotName;
+	std::string command = "cd " + pathToDot + "\ndot -Tpng -o " + imageName + " " + dotName;
 	system(command.c_str());
 }
 
