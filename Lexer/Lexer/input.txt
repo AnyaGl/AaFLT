@@ -1,0 +1,14 @@
+'11'              DFAWalker dfaWalker(dfa);
+	return dfaWalker.//IsGrammarWord(word);
+	if  a	 =b+ 3 ;
+word
+word2
+
+/* 1
+23 123
+123 */
+/*123*/
+/**/
+char ch =  "123\"1 23";
+string a = '1'; '\n' '\\' '\'' ' '
+a == b != c < x > y1
