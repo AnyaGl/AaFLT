@@ -15,25 +15,20 @@ void CLexer::PrintLexemeWithTokens() const
 			  << std::endl;
 	for (auto resultLexeme : m_resultLexemes)
 	{
-		std::cout << resultLexeme.first << ": " << TokenToString(resultLexeme.second) << std::endl;
+		std::cout << resultLexeme.lexeme << ": " << TokenToString(resultLexeme.token) << " line: " << resultLexeme.line << " pos: " << resultLexeme.position << std::endl;
 	}
 }
 
 void CLexer::Analize()
 {
 	std::string line;
-	std::string lexeme;
-	size_t lineCounter = 0;
-	size_t charCounter = 0;
 	while (std::getline(m_stream, line))
 	{
-		++lineCounter;
-		//m_currentLine = lineCounter;
-		charCounter = 0;
+		++m_currentLine;
+		m_currentCharInLine = 0;
 		for (auto ch : line)
 		{
-			++charCounter;
-			//m_lexemeStartPosition = charCounter;
+			++m_currentCharInLine;
 			switch (m_state)
 			{
 			case State::AnalizingCode:
@@ -59,20 +54,21 @@ void CLexer::Analize()
 		}
 		if (m_state == State::AnalizingMultiLineComment)
 		{
-			m_lexeme << "\n";
+			m_lexeme.lexeme += "\n";
 		}
 		else if (m_state == State::AnalizingOneLineComment)
 		{
 			FlushLexeme(CLexer::Token::Comment);
 			m_state = State::AnalizingCode;
+			m_lexeme.line = m_currentLine + 1;
 		}
 		else
 		{
-			FlushLexeme(GetToken(m_lexeme.str()));
+			FlushLexeme(GetToken(m_lexeme.lexeme));
 			m_state = State::AnalizingCode;
 		}
 	}
-	FlushLexeme(GetToken(m_lexeme.str()));
+	FlushLexeme(GetToken(m_lexeme.lexeme));
 }
 
 bool CLexer::IsGrammarWord(const DFA& dfa, const std::string& word)
@@ -89,49 +85,55 @@ bool CLexer::IsGrammarWord(const std::vector<std::string>& words, const std::str
 void CLexer::AnalizeCode(char ch)
 {
 	auto currCh = std::string(1, ch);
+	if (m_lexeme.lexeme.empty())
+	{
+		m_lexeme.line = m_currentLine;
+		m_lexeme.position = m_currentCharInLine;
+	}
+
 	if (ch == COMMENT_START)
 	{
 		m_state = State::LookingForSecondCommentLiteral;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else if (ch == EQUALITY_START || ch == INEQUALITY_START)
 	{
 		m_state = State::LookingForSecondCompLiteral;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else if (ch == STRING_START)
 	{
 		m_currDFAWalker = std::make_shared<DFAWalker>(STRING_FINISH_DFA);
 		m_state = State::AnalizingString;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else if (ch == CHAR_START)
 	{
 		m_currDFAWalker = std::make_shared<DFAWalker>(CHAR_FINISH_DFA);
 		m_state = State::AnalizingChar;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else if (IsGrammarWord(OPERATION_SIGNS, currCh)
 		|| IsGrammarWord(DELIMITERS, currCh)
 		|| IsGrammarWord(COMPARISON, currCh)
 		|| IsGrammarWord(BRACKETS, currCh))
 	{
-		FlushLexeme(GetToken(m_lexeme.str()));
-		m_resultLexemes.push_back({ currCh, GetToken(currCh) });
+		FlushLexeme(GetToken(m_lexeme.lexeme));
+		m_resultLexemes.push_back({ currCh, GetToken(currCh), m_currentLine, m_currentCharInLine });
 	}
 	else if (IsGrammarWord(SPACES, currCh))
 	{
-		FlushLexeme(GetToken(m_lexeme.str()));
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 	}
 	else
 	{
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 }
 
 void CLexer::AnalizeLexeme(char ch, Token token)
 {
-	m_lexeme << ch;
+	m_lexeme.lexeme += ch;
 	if (!m_currDFAWalker->GoToNextState(ch))
 	{
 		FlushLexeme(CLexer::Token::Error);
@@ -152,20 +154,20 @@ void CLexer::AnalizeSecondCommentLiteral(char ch)
 	{
 		m_currDFAWalker = std::make_shared<DFAWalker>(ONE_LINE_COMMENT_DFA);
 		m_state = State::AnalizingOneLineComment;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else if (ch == MULTILINE_COMMENT_START)
 	{
 		m_currDFAWalker = std::make_shared<DFAWalker>(COMMENT_FINISH_DFA);
 		m_state = State::AnalizingMultiLineComment;
-		m_lexeme << ch;
+		m_lexeme.lexeme += ch;
 	}
 	else
 	{
-		FlushLexeme(GetToken(m_lexeme.str()));
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 
 		auto currCh = std::string(1, ch);
-		m_resultLexemes.push_back({ currCh, GetToken(currCh) });
+		m_resultLexemes.push_back({ currCh, GetToken(currCh), m_currentLine, m_currentCharInLine });
 
 		m_state = State::AnalizingCode;
 	}
@@ -175,12 +177,12 @@ void CLexer::AnalizeSecondCompLiteral(char ch)
 {
 	if (ch == '=')
 	{
-		m_lexeme << ch;
-		FlushLexeme(GetToken(m_lexeme.str()));
+		m_lexeme.lexeme += ch;
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 	}
 	else
 	{
-		FlushLexeme(GetToken(m_lexeme.str()));
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 		AnalizeCode(ch);
 	}
 	m_state = State::AnalizingCode;
@@ -188,10 +190,13 @@ void CLexer::AnalizeSecondCompLiteral(char ch)
 
 void CLexer::FlushLexeme(Token token)
 {
-	if (!m_lexeme.str().empty())
+	if (!m_lexeme.lexeme.empty())
 	{
-		m_resultLexemes.push_back({ m_lexeme.str(), token });
-		m_lexeme.str(std::string());
+		m_lexeme.token = token;
+		m_resultLexemes.push_back(m_lexeme);
+		m_lexeme.lexeme = "";
+		m_lexeme.line = m_currentLine;
+		m_lexeme.position = m_currentCharInLine;
 	}
 }
 

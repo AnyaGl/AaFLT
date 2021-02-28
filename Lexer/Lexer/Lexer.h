@@ -36,13 +36,13 @@ public:
 	Token GetToken(std::string const& lexeme);
 
 private:
-	//struct Lexeme
-	//{
-	//	std::string lexeme;
-	//	Token token;
-	//	int line;
-	//	int position;
-	//};
+	struct Lexeme
+	{
+		std::string lexeme;
+		Token token;
+		int line = 0;
+		int position = 0;
+	};
 
 	enum class State
 	{
@@ -68,11 +68,10 @@ private:
 	std::string TokenToString(Token token) const;
 
 	std::istream& m_stream;
-	std::stringstream m_lexeme;
-	//int m_currentLine = 0;
-	//int m_lexemeStartPosition = 0;
-	//std::vector<Lexeme> m_resultLexemes;
-	std::vector<std::pair<std::string, Token>> m_resultLexemes;
+	Lexeme m_lexeme;
+	int m_currentLine = 0;
+	int m_currentCharInLine = 0;
+	std::vector<Lexeme> m_resultLexemes;
 	State m_state = State::AnalizingCode;
 	std::shared_ptr<DFAWalker> m_currDFAWalker = nullptr;
 };
