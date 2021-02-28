@@ -99,22 +99,26 @@ void CLexer::AnalizeCode(char ch)
 
 	if (ch == COMMENT_START)
 	{
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_state = State::LookingForSecondCommentLiteral;
 		m_lexeme.lexeme += ch;
 	}
 	else if (ch == EQUALITY_START || ch == INEQUALITY_START)
 	{
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_state = State::LookingForSecondCompLiteral;
 		m_lexeme.lexeme += ch;
 	}
 	else if (ch == STRING_START)
 	{
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_currDFAWalker = std::make_shared<DFAWalker>(STRING_FINISH_DFA);
 		m_state = State::AnalizingString;
 		m_lexeme.lexeme += ch;
 	}
 	else if (ch == CHAR_START)
 	{
+		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_currDFAWalker = std::make_shared<DFAWalker>(CHAR_FINISH_DFA);
 		m_state = State::AnalizingChar;
 		m_lexeme.lexeme += ch;
