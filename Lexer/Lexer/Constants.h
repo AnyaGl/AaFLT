@@ -36,7 +36,7 @@ const DFA INT_NUMBER_DFA = {
 0..9
 .
 */
-const DFA FLOATING_POINT_NUMBER_DFA = {
+const DFA FIXED_POINT_NUMBER_DFA = {
 	{
 		{ 1, 2 },
 		{ 1, 3 },
@@ -49,32 +49,6 @@ const DFA FLOATING_POINT_NUMBER_DFA = {
 		[](char ch) { return ch == '.'; },
 	}
 };
-/* 
-0..9
-.
-e|E
-+|-
-*/
-const DFA FIXED_POINT_NUMBER_DFA = {
-	{
-		{ 1, 2, -1, -1 },
-		{ 1, 3, -1, -1 },
-		{ 3, -1, -1, -1 },
-		{ 3, -1, 4, -1 },
-		{ -1, -1, -1, 5 },
-		{ 6, -1, -1, -1 },
-		{ 7, -1, -1, -1 },
-		{ -1, -1, -1, -1 },
-	},
-	{ 7 },
-	{
-		[](char ch) { return ch >= '0' && ch <= '9'; },
-		[](char ch) { return ch == '.'; },
-		[](char ch) { return ch == 'e' || ch == 'E'; },
-		[](char ch) { return ch == '+' || ch == '-'; },
-	}
-};
-
 /* 
 0
 1
@@ -223,7 +197,6 @@ const std::vector<std::string> OPERATION_SIGNS = {
 
 const std::vector<std::string> DELIMITERS = {
 	";",
-	".",
 };
 
 const std::vector<std::string> BRACKETS = {

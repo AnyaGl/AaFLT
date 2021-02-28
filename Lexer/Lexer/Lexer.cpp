@@ -4,25 +4,31 @@
 #include <string>
 #include <utility>
 
-CLexer::CLexer(std::istream& stream)
-	: m_stream(stream)
+CLexer::CLexer(std::istream& in, std::ostream& out)
+	: m_in(in)
+	, m_out(out)
 {
 }
 
 void CLexer::PrintLexemeWithTokens() const
 {
-	std::cout << "--- lexeme: token ---" << std::endl
-			  << std::endl;
+	m_out << "--- lexeme: token ---" << std::endl
+		  << std::endl;
 	for (auto resultLexeme : m_resultLexemes)
 	{
-		std::cout << resultLexeme.lexeme << ": " << TokenToString(resultLexeme.token) << " line: " << resultLexeme.line << " pos: " << resultLexeme.position << std::endl;
+		m_out << resultLexeme.lexeme << ": " << TokenToString(resultLexeme.token) << " line: " << resultLexeme.line << " pos: " << resultLexeme.position << std::endl;
 	}
+}
+
+std::vector<CLexer::Lexeme> CLexer::GetLexemesWithTokens() const
+{
+	return m_resultLexemes;
 }
 
 void CLexer::Analize()
 {
 	std::string line;
-	while (std::getline(m_stream, line))
+	while (std::getline(m_in, line))
 	{
 		++m_currentLine;
 		m_currentCharInLine = 0;
@@ -218,10 +224,6 @@ CLexer::Token CLexer::GetToken(std::string const& lexeme)
 	{
 		return CLexer::Token::FixedPointNumber;
 	}
-	if (IsGrammarWord(FLOATING_POINT_NUMBER_DFA, lexeme))
-	{
-		return CLexer::Token::FloatingPointNumber;
-	}
 	if (IsGrammarWord(BINARY_NUMBER_DFA, lexeme))
 	{
 		return CLexer::Token::BinaryNumber;
@@ -265,8 +267,6 @@ std::string CLexer::TokenToString(Token token) const
 		return "IntNumber";
 	case Token::FixedPointNumber:
 		return "FixedPointNumber";
-	case Token::FloatingPointNumber:
-		return "FloatingPointNumber";
 	case Token::BinaryNumber:
 		return "BinaryNumber";
 	case Token::OctalNumber:

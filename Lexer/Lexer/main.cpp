@@ -5,7 +5,7 @@
 int main()
 {
 	std::ifstream fs("input.txt");
-	CLexer lexer(fs);
+	CLexer lexer(fs, std::cout);
 	lexer.Analize();
 	lexer.PrintLexemeWithTokens();
 }

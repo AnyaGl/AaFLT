@@ -13,7 +13,6 @@ public:
 		Identifier,
 		IntNumber,
 		FixedPointNumber,
-		FloatingPointNumber,
 		BinaryNumber,
 		OctalNumber,
 		HexNumber,
@@ -27,15 +26,6 @@ public:
 		Error
 	};
 
-	CLexer(std::istream& stream);
-
-	void PrintLexemeWithTokens() const;
-
-	void Analize();
-
-	Token GetToken(std::string const& lexeme);
-
-private:
 	struct Lexeme
 	{
 		std::string lexeme;
@@ -44,6 +34,17 @@ private:
 		int position = 0;
 	};
 
+	CLexer(std::istream& in, std::ostream& out);
+
+	void PrintLexemeWithTokens() const;
+
+	void Analize();
+
+	Token GetToken(std::string const& lexeme);
+
+	std::vector<Lexeme> GetLexemesWithTokens() const;
+
+private:
 	enum class State
 	{
 		AnalizingCode,
@@ -67,7 +68,8 @@ private:
 
 	std::string TokenToString(Token token) const;
 
-	std::istream& m_stream;
+	std::istream& m_in;
+	std::ostream& m_out;
 	Lexeme m_lexeme;
 	int m_currentLine = 0;
 	int m_currentCharInLine = 0;
