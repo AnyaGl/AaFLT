@@ -200,7 +200,6 @@ const std::vector<std::string> DELIMITERS = {
 };
 
 const std::vector<std::string> BRACKETS = {
-	";",
 	"(",
 	")",
 	"{",

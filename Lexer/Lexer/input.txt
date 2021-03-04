@@ -1,14 +1,14 @@
-hello"world"              DFAWalker dfaWalker(dfa);
-    return dfaWalker//IsGrammarWord(word);
- if  a	 =b+ 3.9 ;
-word
-word2
-
-/* 1
-23 123
-123 */
-/*123*/
-/**/
-char ch =  "123\"1 23";
-string a = '1'; '\n' '\\' '\'' ' '
-a == b != c < x > y1
+int iden123 = 123;
+char iden1 = '1';
+string str = "\"12  \" '3\"";
+if (iden123 == iden1)
+{
+	iden1 = iden123;
+}
+else 
+{
+}
+while (x > 0xA0F)
+{
+	x = x + 1.;
+}
