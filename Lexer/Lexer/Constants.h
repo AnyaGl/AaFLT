@@ -13,7 +13,7 @@ const DFA IDENTIFIER_DFA = {
 	},
 	{ 1 },
 	{
-		[](char ch) { return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'; },
+		[](char ch) { return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_'; },
 		[](char ch) { return ch >= '0' && ch <= '9'; },
 	}
 };
@@ -49,6 +49,32 @@ const DFA FIXED_POINT_NUMBER_DFA = {
 		[](char ch) { return ch == '.'; },
 	}
 };
+/* 
+0..9
+.
+e|E
++|-
+*/
+const DFA FLOAT_POINT_NUMBER_DFA = {
+	{
+		{ 1, 2, -1, -1 },
+		{ 1, 3, -1, -1 },
+		{ 3, -1, -1, -1 },
+		{ 3, -1, 4, -1 },
+		{ -1, -1, -1, 5 },
+		{ 6, -1, -1, -1 },
+		{ 7, -1, -1, -1 },
+		{ -1, -1, -1, -1 },
+	},
+	{ 7 },
+	{
+		[](char ch) { return ch >= '0' && ch <= '9'; },
+		[](char ch) { return ch == '.'; },
+		[](char ch) { return ch == 'e' || ch == 'E'; },
+		[](char ch) { return ch == '+' || ch == '-'; },
+	}
+};
+
 /* 
 0
 1

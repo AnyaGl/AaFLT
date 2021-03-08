@@ -10,71 +10,120 @@ CLexer::CLexer(std::istream& in, std::ostream& out)
 {
 }
 
-void CLexer::PrintLexemeWithTokens() const
+CLexer::Lexeme CLexer::GetNextLexeme()
 {
-	m_out << "--- lexeme: token ---" << std::endl
-		  << std::endl;
-	for (auto resultLexeme : m_resultLexemes)
+	auto resLexeme = m_prevLexeme;
+	if (!m_prevLexeme.lexeme.empty())
 	{
-		m_out << resultLexeme.lexeme << ": " << TokenToString(resultLexeme.token) << " line: " << resultLexeme.line << " pos: " << resultLexeme.position << std::endl;
+		m_prevLexeme.lexeme = "";
+		return resLexeme;
 	}
-}
-
-std::vector<CLexer::Lexeme> CLexer::GetLexemesWithTokens() const
-{
-	return m_resultLexemes;
-}
-
-void CLexer::Analize()
-{
-	std::string line;
-	while (std::getline(m_in, line))
+	AnalizeString();
+	while ((!m_isLexemeFind && (!m_isCurrLexemFind || !m_prevLexeme.lexeme.empty())) && std::getline(m_in, m_currLine))
 	{
-		++m_currentLine;
+		++m_currentLineNumber;
 		m_currentCharInLine = 0;
-		for (auto ch : line)
+		AnalizeString();
+		
+	}
+	if (!m_isLexemeFind)
+	{
+		if (GetToken(m_lexeme.lexeme) == CLexer::Token::Error)
 		{
-			++m_currentCharInLine;
-			switch (m_state)
-			{
-			case State::AnalizingCode:
-				AnalizeCode(ch);
-				break;
-			case State::AnalizingOneLineComment:
-			case State::AnalizingMultiLineComment:
-				AnalizeLexeme(ch, CLexer::Token::Comment);
-				break;
-			case State::AnalizingString:
-				AnalizeLexeme(ch, CLexer::Token::String);
-				break;
-			case State::AnalizingChar:
-				AnalizeLexeme(ch, CLexer::Token::Char);
-				break;
-			case State::LookingForSecondCommentLiteral:
-				AnalizeSecondCommentLiteral(ch);
-				break;
-			case State::LookingForSecondCompLiteral:
-				AnalizeSecondCompLiteral(ch);
-				break;
-			}
-		}
-		if (m_state == State::AnalizingMultiLineComment)
-		{
-			m_lexeme.lexeme += "\n";
-		}
-		else if (m_state == State::AnalizingOneLineComment)
-		{
-			FlushLexeme(CLexer::Token::Comment);
-			m_state = State::AnalizingCode;
-			m_lexeme.line = m_currentLine + 1;
+			FlushLexeme(CLexer::Token::EndOfFile);
 		}
 		else
 		{
 			FlushLexeme(GetToken(m_lexeme.lexeme));
-			m_state = State::AnalizingCode;
 		}
 	}
-	FlushLexeme(GetToken(m_lexeme.lexeme));
+
+	if (m_prevLexeme.lexeme.empty() && !m_lexeme.lexeme.empty() && m_isCurrLexemFind)
+	{
+		resLexeme = m_lexeme;
+		m_lexeme.lexeme = "";
+
+		m_isCurrLexemFind = false;
+	}
+	else
+	{
+		resLexeme = m_prevLexeme;
+		m_prevLexeme.lexeme = "";
+		if (m_isCurrLexemFind)
+		{
+			m_prevLexeme = m_lexeme;
+			m_lexeme.lexeme = "";
+			m_isCurrLexemFind = false;
+		}
+	}
+	m_isLexemeFind = false;
+	return resLexeme;
+}
+
+void CLexer::AnalizeString()
+{
+	auto charNumber = 0;
+	for (auto ch : m_currLine)
+	{
+		++m_currentCharInLine;
+		++charNumber;
+		switch (m_state)
+		{
+		case State::AnalizingCode:
+			AnalizeCode(ch);
+			break;
+		case State::AnalizingOneLineComment:
+		case State::AnalizingMultiLineComment:
+			m_lexeme.lexeme += ch;
+			AnalizeLexeme(ch, CLexer::Token::Comment);
+			break;
+		case State::AnalizingString:
+			m_lexeme.lexeme += ch;
+			AnalizeLexeme(ch, CLexer::Token::String);
+			break;
+		case State::AnalizingChar:
+			m_lexeme.lexeme += ch;
+			AnalizeLexeme(ch, CLexer::Token::Char);
+			break;
+		case State::LookingForSecondCommentLiteral:
+			AnalizeSecondCommentLiteral(ch);
+			break;
+		case State::LookingForSecondCompLiteral:
+			AnalizeSecondCompLiteral(ch);
+			break;
+		}
+		if (m_isLexemeFind || m_isCurrLexemFind && m_prevLexeme.lexeme.empty())
+		{
+			if (charNumber >= m_currLine.size())
+			{
+				m_currLine = "";
+			}
+			else
+			{
+				m_currLine = m_currLine.substr(charNumber);
+			}
+			return;
+		}
+	}
+	if (m_currLine.empty())
+	{
+		return;
+	}
+	if (m_state == State::AnalizingMultiLineComment || m_state == State::AnalizingString)
+	{
+		m_lexeme.lexeme += "\n";
+	}
+	else if (m_state == State::AnalizingOneLineComment)
+	{
+		FlushLexeme(CLexer::Token::Comment);
+		m_state = State::AnalizingCode;
+	}
+	else if (m_state != State::AnalizingString)
+	{
+		FlushLexeme(GetToken(m_lexeme.lexeme));
+		m_state = State::AnalizingCode;
+	}
+	m_currLine = "";
 }
 
 bool CLexer::IsGrammarWord(const DFA& dfa, const std::string& word)
@@ -93,7 +142,7 @@ void CLexer::AnalizeCode(char ch)
 	auto currCh = std::string(1, ch);
 	if (m_lexeme.lexeme.empty())
 	{
-		m_lexeme.line = m_currentLine;
+		m_lexeme.line = m_currentLineNumber;
 		m_lexeme.position = m_currentCharInLine;
 	}
 
@@ -102,12 +151,16 @@ void CLexer::AnalizeCode(char ch)
 		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_state = State::LookingForSecondCommentLiteral;
 		m_lexeme.lexeme += ch;
+		m_lexeme.line = m_currentLineNumber;
+		m_lexeme.position = m_currentCharInLine;
 	}
 	else if (ch == EQUALITY_START || ch == INEQUALITY_START)
 	{
 		FlushLexeme(GetToken(m_lexeme.lexeme));
 		m_state = State::LookingForSecondCompLiteral;
 		m_lexeme.lexeme += ch;
+		m_lexeme.line = m_currentLineNumber;
+		m_lexeme.position = m_currentCharInLine;
 	}
 	else if (ch == STRING_START)
 	{
@@ -115,6 +168,8 @@ void CLexer::AnalizeCode(char ch)
 		m_currDFAWalker = std::make_shared<DFAWalker>(STRING_FINISH_DFA);
 		m_state = State::AnalizingString;
 		m_lexeme.lexeme += ch;
+		m_lexeme.line = m_currentLineNumber;
+		m_lexeme.position = m_currentCharInLine;
 	}
 	else if (ch == CHAR_START)
 	{
@@ -122,14 +177,24 @@ void CLexer::AnalizeCode(char ch)
 		m_currDFAWalker = std::make_shared<DFAWalker>(CHAR_FINISH_DFA);
 		m_state = State::AnalizingChar;
 		m_lexeme.lexeme += ch;
+		m_lexeme.line = m_currentLineNumber;
+		m_lexeme.position = m_currentCharInLine;
 	}
 	else if (IsGrammarWord(OPERATION_SIGNS, currCh)
 		|| IsGrammarWord(DELIMITERS, currCh)
 		|| IsGrammarWord(COMPARISON, currCh)
 		|| IsGrammarWord(BRACKETS, currCh))
 	{
-		FlushLexeme(GetToken(m_lexeme.lexeme));
-		m_resultLexemes.push_back({ currCh, GetToken(currCh), m_currentLine, m_currentCharInLine });
+		if (currCh != "+" && currCh != "-" || !IsFloatPointNumberBeforeSign())
+		{
+			FlushLexeme(GetToken(m_lexeme.lexeme));
+			m_lexeme = { currCh, GetToken(currCh), m_currentLineNumber, m_currentCharInLine };
+			m_isCurrLexemFind = true;
+		}
+		else
+		{
+			m_lexeme.lexeme += currCh;
+		}
 	}
 	else if (IsGrammarWord(SPACES, currCh))
 	{
@@ -143,7 +208,6 @@ void CLexer::AnalizeCode(char ch)
 
 void CLexer::AnalizeLexeme(char ch, Token token)
 {
-	m_lexeme.lexeme += ch;
 	if (!m_currDFAWalker->GoToNextState(ch))
 	{
 		FlushLexeme(CLexer::Token::Error);
@@ -177,7 +241,9 @@ void CLexer::AnalizeSecondCommentLiteral(char ch)
 		FlushLexeme(GetToken(m_lexeme.lexeme));
 
 		auto currCh = std::string(1, ch);
-		m_resultLexemes.push_back({ currCh, GetToken(currCh), m_currentLine, m_currentCharInLine });
+		m_lexeme = { currCh, GetToken(currCh), m_currentLineNumber, m_currentCharInLine };
+		m_isCurrLexemFind = true;
+
 
 		m_state = State::AnalizingCode;
 	}
@@ -202,12 +268,53 @@ void CLexer::FlushLexeme(Token token)
 {
 	if (!m_lexeme.lexeme.empty())
 	{
-		m_lexeme.token = token;
-		m_resultLexemes.push_back(m_lexeme);
+		auto resToken = token;
+		switch (token)
+		{
+		case CLexer::Token::Identifier:
+			resToken = m_lexeme.lexeme.size() > 64 ? CLexer::Token::Error : token;
+			break;
+		case CLexer::Token::IntNumber:
+			resToken = m_lexeme.lexeme.size() > 11 ? CLexer::Token::Error : token;
+			break;
+		case CLexer::Token::FixedPointNumber:
+			auto pointIt = m_lexeme.lexeme.find('.');
+			if (m_lexeme.lexeme.substr(0, pointIt).size() > 11 || m_lexeme.lexeme.substr(pointIt).size() > 12)
+			{
+				resToken = CLexer::Token::Error;
+			}
+			else
+			{
+				resToken = token;
+			}
+			break;
+		}
+		m_lexeme.token = resToken;
+		m_prevLexeme = m_lexeme;
 		m_lexeme.lexeme = "";
-		m_lexeme.line = m_currentLine;
-		m_lexeme.position = m_currentCharInLine;
+		m_isLexemeFind = true;
 	}
+}
+
+bool CLexer::IsFloatPointNumberBeforeSign()
+{
+	if (m_lexeme.lexeme.empty() || m_lexeme.lexeme.back() != 'e' && m_lexeme.lexeme.back() != 'E')
+	{
+		return false;
+	}
+	m_currDFAWalker = std::make_shared<DFAWalker>(FLOAT_POINT_NUMBER_DFA);
+	for (auto ch : m_lexeme.lexeme)
+	{
+		if (!m_currDFAWalker->GoToNextState(ch))
+		{
+			return false;
+		}
+		else if (m_currDFAWalker->IsFinishedState())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 CLexer::Token CLexer::GetToken(std::string const& lexeme)
@@ -227,6 +334,10 @@ CLexer::Token CLexer::GetToken(std::string const& lexeme)
 	if (IsGrammarWord(FIXED_POINT_NUMBER_DFA, lexeme))
 	{
 		return CLexer::Token::FixedPointNumber;
+	}
+	if (IsGrammarWord(FLOAT_POINT_NUMBER_DFA, lexeme))
+	{
+		return CLexer::Token::FloatPointNumber;
 	}
 	if (IsGrammarWord(BINARY_NUMBER_DFA, lexeme))
 	{
@@ -271,6 +382,8 @@ std::string CLexer::TokenToString(Token token) const
 		return "IntNumber";
 	case Token::FixedPointNumber:
 		return "FixedPointNumber";
+	case Token::FloatPointNumber:
+		return "FloatPointNumber";
 	case Token::BinaryNumber:
 		return "BinaryNumber";
 	case Token::OctalNumber:
@@ -293,6 +406,8 @@ std::string CLexer::TokenToString(Token token) const
 		return "Bracket";
 	case Token::Error:
 		return "Error";
+	case Token::EndOfFile:
+		return "EndOfFile";
 	default:
 		break;
 	}

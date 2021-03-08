@@ -13,6 +13,7 @@ public:
 		Identifier,
 		IntNumber,
 		FixedPointNumber,
+		FloatPointNumber,
 		BinaryNumber,
 		OctalNumber,
 		HexNumber,
@@ -23,7 +24,8 @@ public:
 		Comment,
 		Comparison,
 		Bracket,
-		Error
+		Error,
+		EndOfFile
 	};
 
 	struct Lexeme
@@ -36,13 +38,9 @@ public:
 
 	CLexer(std::istream& in, std::ostream& out);
 
-	void PrintLexemeWithTokens() const;
-
-	void Analize();
-
 	Token GetToken(std::string const& lexeme);
 
-	std::vector<Lexeme> GetLexemesWithTokens() const;
+	Lexeme GetNextLexeme();
 
 private:
 	enum class State
@@ -56,6 +54,8 @@ private:
 		LookingForSecondCompLiteral,
 	};
 
+	void AnalizeString();
+
 	bool IsGrammarWord(const DFA& dfa, const std::string& word);
 	bool IsGrammarWord(const std::vector<std::string>& words, const std::string& word);
 
@@ -66,14 +66,19 @@ private:
 
 	void FlushLexeme(Token token);
 
+	bool IsFloatPointNumberBeforeSign();
+
 	std::string TokenToString(Token token) const;
 
 	std::istream& m_in;
 	std::ostream& m_out;
 	Lexeme m_lexeme;
-	int m_currentLine = 0;
+	Lexeme m_prevLexeme;
+	std::string m_currLine;
+	int m_currentLineNumber = 0;
 	int m_currentCharInLine = 0;
-	std::vector<Lexeme> m_resultLexemes;
+	bool m_isLexemeFind = false;
+	bool m_isCurrLexemFind = false;
 	State m_state = State::AnalizingCode;
 	std::shared_ptr<DFAWalker> m_currDFAWalker = nullptr;
 };

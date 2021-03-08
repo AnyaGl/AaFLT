@@ -8,8 +8,14 @@ std::vector<CLexer::Lexeme> GetLexemes(std::string input)
 	std::stringstream in(std::move(input));
 	std::stringstream out;
 	CLexer lexer(in, out);
-	lexer.Analize();
-	return lexer.GetLexemesWithTokens();
+	std::vector<CLexer::Lexeme> lexemes;
+	auto lexeme = lexer.GetNextLexeme();
+	while (!lexeme.lexeme.empty())
+	{
+		lexemes.push_back(lexeme);
+		lexeme = lexer.GetNextLexeme();
+	}
+	return lexemes;
 }
 
 bool operator==(const CLexer::Lexeme& lhs, const CLexer::Lexeme& rhs)
@@ -35,7 +41,10 @@ TEST_CASE("Analize string")
 	lexemes = GetLexemes(" \"12  \"\" '3");
 	CHECK(lexemes.size() == 2);
 	CHECK(lexemes.at(0) == CLexer::Lexeme{ "\"12  \"", CLexer::Token::String, 1, 2 });
-	CHECK(lexemes.at(1) == CLexer::Lexeme{ "\" '3", CLexer::Token::Error, 1, 8 });
+	std::cout << lexemes.at(1).lexeme;
+	std::cout << lexemes.at(1).line;
+	std::cout << lexemes.at(1).position;
+	CHECK(lexemes.at(1) == CLexer::Lexeme{ "\" '3\n", CLexer::Token::EndOfFile, 1, 8 });
 }
 
 TEST_CASE("Analize char")
@@ -127,6 +136,10 @@ TEST_CASE("Analize fixed point number")
 	lexemes = GetLexemes(".97");
 	CHECK(lexemes.size() == 1);
 	CHECK(lexemes.at(0) == CLexer::Lexeme{ ".97", CLexer::Token::FixedPointNumber, 1, 1 });
+
+	lexemes = GetLexemes("1.1.");
+	CHECK(lexemes.size() == 1);
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "1.1.", CLexer::Token::Error, 1, 1 });
 }
 
 TEST_CASE("Analize octal number")
@@ -149,4 +162,22 @@ TEST_CASE("Analize hex number")
 	lexemes = GetLexemes("0xG");
 	CHECK(lexemes.size() == 1);
 	CHECK(lexemes.at(0) == CLexer::Lexeme{ "0xG", CLexer::Token::Error, 1, 1 });
+}
+
+TEST_CASE("Analize identifier")
+{
+	auto lexemes = GetLexemes("_a");
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "_a", CLexer::Token::Identifier, 1, 1 });
+
+	lexemes = GetLexemes("_a_");
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "_a_", CLexer::Token::Identifier, 1, 1 });
+
+	lexemes = GetLexemes("_1");
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "_1", CLexer::Token::Identifier, 1, 1 });
+
+	lexemes = GetLexemes("1_");
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "1_", CLexer::Token::Error, 1, 1 });
+
+	lexemes = GetLexemes("_a_1");
+	CHECK(lexemes.at(0) == CLexer::Lexeme{ "_a_1", CLexer::Token::Identifier, 1, 1 });
 }
