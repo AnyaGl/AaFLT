@@ -44,7 +44,7 @@ TEST_CASE("Analize string")
 	std::cout << lexemes.at(1).lexeme;
 	std::cout << lexemes.at(1).line;
 	std::cout << lexemes.at(1).position;
-	CHECK(lexemes.at(1) == CLexer::Lexeme{ "\" '3\n", CLexer::Token::EndOfFile, 1, 8 });
+	CHECK(lexemes.at(1) == CLexer::Lexeme{ "\" '3\n", CLexer::Token::Error, 1, 8 });
 }
 
 TEST_CASE("Analize char")

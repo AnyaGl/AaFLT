@@ -28,7 +28,7 @@ CLexer::Lexeme CLexer::GetNextLexeme()
 	}
 	if (!m_isLexemeFind)
 	{
-		if (GetToken(m_lexeme.lexeme) == CLexer::Token::Error)
+		if (GetToken(m_lexeme.lexeme) == CLexer::Token::Error && (m_state == State::AnalizingMultiLineComment || m_state == State::AnalizingOneLineComment))
 		{
 			FlushLexeme(CLexer::Token::EndOfFile);
 		}
@@ -97,6 +97,10 @@ void CLexer::AnalizeString()
 			if (charNumber >= m_currLine.size())
 			{
 				m_currLine = "";
+				if (m_state == State::AnalizingMultiLineComment || m_state == State::AnalizingString)
+				{
+					m_lexeme.lexeme += "\n";
+				}
 			}
 			else
 			{
@@ -241,9 +245,8 @@ void CLexer::AnalizeSecondCommentLiteral(char ch)
 		FlushLexeme(GetToken(m_lexeme.lexeme));
 
 		auto currCh = std::string(1, ch);
-		m_lexeme = { currCh, GetToken(currCh), m_currentLineNumber, m_currentCharInLine };
-		m_isCurrLexemFind = true;
-
+		m_currLine = currCh + m_currLine;
+		m_currentCharInLine--;
 
 		m_state = State::AnalizingCode;
 	}
@@ -278,15 +281,7 @@ void CLexer::FlushLexeme(Token token)
 			resToken = m_lexeme.lexeme.size() > 11 ? CLexer::Token::Error : token;
 			break;
 		case CLexer::Token::FixedPointNumber:
-			auto pointIt = m_lexeme.lexeme.find('.');
-			if (m_lexeme.lexeme.substr(0, pointIt).size() > 11 || m_lexeme.lexeme.substr(pointIt).size() > 12)
-			{
-				resToken = CLexer::Token::Error;
-			}
-			else
-			{
-				resToken = token;
-			}
+			resToken = m_lexeme.lexeme.size() > 18 ? CLexer::Token::Error : token;
 			break;
 		}
 		m_lexeme.token = resToken;

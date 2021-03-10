@@ -47,7 +47,6 @@ std::string TokenToString(CLexer::Token token)
 	throw std::invalid_argument("unknown token");
 }
 
-
 int main()
 {
 	std::ifstream fs("input.txt");
