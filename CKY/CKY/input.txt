@@ -1,0 +1,6 @@
+aabbbba
+4
+S -> A A
+S -> b
+A -> S S
+A -> a
