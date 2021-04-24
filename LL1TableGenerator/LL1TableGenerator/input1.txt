@@ -1,0 +1,10 @@
+<S> - <A> <B> <C> / f
+<A> - f <X> / f
+<X> - a <X> / a
+<X> - e / b c #
+<B> - b <Q> / b
+<B> - e / c #
+<Q> - <B> / b c #
+<Q> - <A> / f
+<C> - c <C> / c
+<C> - e / #
