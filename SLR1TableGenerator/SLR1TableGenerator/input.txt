@@ -1,0 +1,6 @@
+<S> - real <idlist> # / real 0 0
+<idlist> - <idlist> , <id> / <idlist> 1 0 <id> 2 0 A 3 0 B 4 0 C 5 0
+<idlist> - <id> / <id> 2 0 A 3 0 B 4 0 C 5 0
+<id> - A / A 3 0
+<id> - B / B 4 0
+<id> - C / C 5 0
