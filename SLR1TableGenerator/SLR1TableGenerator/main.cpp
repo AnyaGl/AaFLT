@@ -162,4 +162,6 @@ int main()
 	generator.ReadRulesFromFile(input);
 	generator.GenerateTable();
 	generator.PrintTable();
+	std::cout << "\n\n";
+	generator.PrintSimplifiedTable();
 }

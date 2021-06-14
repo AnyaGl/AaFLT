@@ -40,6 +40,9 @@ public:
 	Table GenerateTable();
 	void PrintTable() const;
 
+	std::vector<std::vector<std::string>> GetSimplifiedTable() const;
+	void PrintSimplifiedTable() const;
+
 private:
 	NodesSet GetFirstSet(std::string const& item);
 	void ProcessNode(Node const& node);

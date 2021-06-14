@@ -1,7 +1,10 @@
 ﻿#include "SLR1TableGenerator.h"
+#include <functional>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 const std::string ROLL_UP = "RollUp";
 
@@ -36,13 +39,13 @@ SLR1TableGenerator::Table SLR1TableGenerator::GenerateTable()
 		}
 	}
 
-	
-		for (auto& column : m_table)
+	for (auto& column : m_table)
 	{
 		column.second.push_back({});
 	}
-	m_processedItems.push_back({ Node{ m_rules.at(0).nonTerminal, -1, -1 } });
+	m_processedItems.push_back({ Node{ m_startNonTerminal, -1, -1 } });
 	m_itemsForProcessing.push({ Node{ m_rules.at(0).rightPartOfRule.at(0), 0, 0 } });
+
 	auto nextNode = Node{ m_rules.at(0).rightPartOfRule.at(0), 0, 0 };
 	NodesSet nodes;
 	nodes.insert(nextNode);
@@ -51,6 +54,7 @@ SLR1TableGenerator::Table SLR1TableGenerator::GenerateTable()
 		nodes.merge(GetFirstSet(nextNode.item));
 	}
 	AppendNodesToTable(nodes);
+	m_table[m_startNonTerminal].at(0) = { Node{ "ok", -1, -1 } };
 
 	while (!m_itemsForProcessing.empty())
 	{
@@ -203,6 +207,86 @@ void SLR1TableGenerator::PrintTable() const
 	}
 }
 
+std::vector<std::vector<std::string>> SLR1TableGenerator::GetSimplifiedTable() const
+{
+	std::vector<std::vector<std::string>> table;
+	auto verticalSize = m_processedItems.size();
+	int counter = 0;
+	std::map<std::string, NodesSet> changes = { { "ok", { Node{ "ok", -1, -1 } } } };
+
+	auto getChange = [this, &changes](NodesSet const& set) {
+		std::optional<std::string> result;
+		for (auto& change : changes)
+		{
+			if (change.second == set)
+			{
+				result = change.first;
+				return result;
+			}
+		}
+		return result;
+	};
+
+	table.push_back({});
+	table.back().push_back("  ");
+	for (size_t i = 0; i < verticalSize; ++i)
+	{
+		table.push_back({});
+		auto change = getChange(m_processedItems.at(i));
+		if (!change)
+		{
+			change = "S" + std::to_string(counter++);
+			changes[*change] = m_processedItems.at(i);
+		}
+		table.back().push_back(*change);
+	}
+
+	for (auto& column : m_table)
+	{
+		table.front().push_back(column.first);
+
+		for (size_t i = 0; i < verticalSize; ++i)
+		{
+			auto item = column.second.at(i);
+
+			auto change = getChange(item);
+			if (item.size() < 1)
+			{
+				change = "  ";
+			}
+			if (!change)
+			{
+				if (IsRolledUp(item))
+				{
+					change = "R" + std::to_string(item.begin()->ruleNum);
+				}
+				else
+				{
+					std::cout << counter;
+					change = "S" + std::to_string(counter++);
+				}
+				changes[*change] = item;
+			}
+			table.at(i + 1).push_back(*change);
+		}
+	}
+	return table;
+}
+
+void SLR1TableGenerator::PrintSimplifiedTable() const
+{
+	auto table = GetSimplifiedTable();
+
+	for (auto line : table)
+	{
+		for (auto elem : line)
+		{
+			std::cout << elem << " |";
+		}
+		std::cout << std::endl;
+	}
+}
+
 SLR1TableGenerator::Rule SLR1TableGenerator::CreateRule(std::string const& input)
 {
 	std::stringstream ss(input);
@@ -251,7 +335,17 @@ void SLR1TableGenerator::PrintNodes(NodesSet const& nodes)
 {
 	for (auto& node : nodes)
 	{
-		std::cout << node.item << node.ruleNum << node.itemNum << ", ";
+		std::cout << node.item;
+
+		if (node.ruleNum != -1)
+		{
+			std::cout << node.ruleNum;
+		}
+		if (node.itemNum != -1)
+		{
+			std::cout << node.itemNum;
+		}
+		std::cout << ", ";
 	}
 }
 
@@ -261,6 +355,10 @@ bool SLR1TableGenerator::IsRolledUp(NodesSet const& nodes)
 	{
 		if (node.item == ROLL_UP)
 		{
+			if (nodes.size() != 1)
+			{
+				throw std::runtime_error("Rolled up item cannot contains more than one node");
+			}
 			return true;
 		}
 	}
