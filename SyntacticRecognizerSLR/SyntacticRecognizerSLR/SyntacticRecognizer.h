@@ -22,7 +22,7 @@ private:
 
 	std::vector<std::vector<std::string>> m_table;
 	std::vector<SLR1TableGenerator::Rule> m_rules;
-	std::stack<std::string> m_readedItems;
-	std::stack<std::string> m_states;
+	std::vector<std::string> m_readedItems;
+	std::vector<std::string> m_states;
 	std::string m_currState;
 };

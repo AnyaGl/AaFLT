@@ -1,11 +1,12 @@
 #include "SyntacticRecognizer.h"
+#include <iostream>
 
 SyntacticRecognizer::SyntacticRecognizer(std::vector<std::vector<std::string>> const& table, std::vector<SLR1TableGenerator::Rule> const& rules)
 	: m_table(table)
 	, m_rules(rules)
 	, m_currState(m_table.at(1).at(0))
 {
-	m_states.push(m_currState);
+	m_states.push_back(m_currState);
 }
 
 void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
@@ -23,6 +24,20 @@ void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
 
 void SyntacticRecognizer::UpdateCurrentState(std::string const& item)
 {
+	std::cout << "Current item: " << item << "   Current state: " << m_currState << std::endl;
+	std::cout << "States: ";
+	for (auto state : m_states)
+	{
+		std::cout << state << "  ";
+	}
+	std::cout << "\nReaded items: ";
+	for (auto item : m_readedItems)
+	{
+		std::cout << item << "  ";
+	}
+	std::cout << std::endl << std::endl;
+	
+
 	int columnIndex = GetColumnIndex(item);
 	int rowIndex = GetRowIndex();
 	auto newState = m_table.at(rowIndex).at(columnIndex);
@@ -38,8 +53,8 @@ void SyntacticRecognizer::UpdateCurrentState(std::string const& item)
 			throw std::runtime_error("The sequence does not belong to grammar");
 		}
 		m_currState = newState;
-		m_states.push(m_currState);
-		m_readedItems.push(item);
+		m_states.push_back(m_currState);
+		m_readedItems.push_back(item);
 	}
 }
 
@@ -54,11 +69,11 @@ void SyntacticRecognizer::RollUp(int ruleNum)
 	}
 	for (size_t i = 0; i < rightPartOfRuleSize; ++i)
 	{
-		m_states.pop();
-		m_readedItems.pop();
+		m_states.pop_back();
+		m_readedItems.pop_back();
 	}
 	auto newItem = m_rules.at(ruleNum).nonTerminal;
-	m_currState = m_states.top();
+	m_currState = m_states.back();
 	UpdateCurrentState(newItem);
 }
 
