@@ -37,20 +37,26 @@ public:
 	using Table = std::map<std::string, Column>;
 
 	void ReadRulesFromFile(std::istream& in);
-	Table GenerateTable();
+	void GenerateTable();
 	void PrintTable() const;
 
 	std::vector<std::vector<std::string>> GetSimplifiedTable() const;
 	void PrintSimplifiedTable() const;
 
+	std::vector<Rule> GetRules() const;
+
 private:
 	NodesSet GetFirstSet(std::string const& item);
 	void ProcessNode(Node const& node);
+	void ProcessFirstNode();
 	bool IsLastItemInRule(Node const& node) const;
 	std::set<std::string> GetNextItems(std::string const& item, std::set<std::string>& processedNonTerminals) const;
 	void AppendRolledUpItemsToTable(std::set<std::string> const& items, int ruleNum);
 	void AppendNodesToTable(NodesSet const& nodes);
 	std::set<std::string> FindRollUpItems(std::string const& item) const;
+	void UpdateItemsForProcess();
+	bool NeedAddNewRule() const;
+	void AddNewRule();
 
 	static Rule CreateRule(std::string const& input);
 	static bool IsTerminal(std::string const& item);

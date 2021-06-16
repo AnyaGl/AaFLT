@@ -15,18 +15,22 @@ void SLR1TableGenerator::ReadRulesFromFile(std::istream& in)
 	{
 		m_rules.push_back(CreateRule(line));
 	}
+
+	m_startNonTerminal = m_rules.at(0).nonTerminal;
+
+	if (NeedAddNewRule())
+	{
+		AddNewRule();
+	}
+	m_rules.front().rightPartOfRule.push_back("#");
 }
 
-SLR1TableGenerator::Table SLR1TableGenerator::GenerateTable()
+void SLR1TableGenerator::GenerateTable()
 {
-	//bool needAddNewRule = false;
-	m_startNonTerminal = m_rules.at(0).nonTerminal;
 	for (auto rule : m_rules)
 	{
 		m_table.emplace(rule.nonTerminal, Column{});
 		m_table.emplace(rule.rightPartOfRule.at(0), Column{});
-
-		//needAddNewRule = !needAddNewRule ? rule.rightPartOfRule.at(0) == startNonTerminal : needAddNewRule;
 
 		for (size_t i = 1; i < rule.rightPartOfRule.size(); ++i)
 		{
@@ -34,27 +38,11 @@ SLR1TableGenerator::Table SLR1TableGenerator::GenerateTable()
 			auto currItem = rule.rightPartOfRule.at(i);
 			m_nextItems[prevItem].push_back(currItem);
 
-			//needAddNewRule = !needAddNewRule ? currItem == startNonTerminal : needAddNewRule;
 			m_table.emplace(currItem, Column{});
 		}
 	}
 
-	for (auto& column : m_table)
-	{
-		column.second.push_back({});
-	}
-	m_processedItems.push_back({ Node{ m_startNonTerminal, -1, -1 } });
-	m_itemsForProcessing.push({ Node{ m_rules.at(0).rightPartOfRule.at(0), 0, 0 } });
-
-	auto nextNode = Node{ m_rules.at(0).rightPartOfRule.at(0), 0, 0 };
-	NodesSet nodes;
-	nodes.insert(nextNode);
-	if (!IsTerminal(nextNode.item))
-	{
-		nodes.merge(GetFirstSet(nextNode.item));
-	}
-	AppendNodesToTable(nodes);
-	m_table[m_startNonTerminal].at(0) = { Node{ "ok", -1, -1 } };
+	ProcessFirstNode();
 
 	while (!m_itemsForProcessing.empty())
 	{
@@ -70,17 +58,8 @@ SLR1TableGenerator::Table SLR1TableGenerator::GenerateTable()
 			ProcessNode(node);
 		}
 
-		for (auto& column : m_table)
-		{
-			auto item = column.second.back();
-			if (item.size() > 0 && std::find(m_processedItems.begin(), m_processedItems.end(), item) == m_processedItems.end() && !IsRolledUp(item))
-			{
-				m_itemsForProcessing.push(item);
-			}
-		}
+		UpdateItemsForProcess();
 	}
-
-	return Table();
 }
 
 SLR1TableGenerator::NodesSet SLR1TableGenerator::GetFirstSet(std::string const& item)
@@ -113,6 +92,27 @@ void SLR1TableGenerator::ProcessNode(Node const& node)
 		nodes.merge(GetFirstSet(nextNode));
 	}
 	AppendNodesToTable(nodes);
+}
+
+void SLR1TableGenerator::ProcessFirstNode()
+{
+	for (auto& column : m_table)
+	{
+		column.second.push_back({});
+	}
+	m_processedItems.push_back({ Node{ m_startNonTerminal, -1, -1 } });
+
+	auto nextNode = Node{ m_rules.at(0).rightPartOfRule.at(0), 0, 0 };
+	NodesSet nodes;
+	nodes.insert(nextNode);
+	nodes.merge(m_rules.at(0).firstSet);
+	if (!IsTerminal(nextNode.item))
+	{
+		nodes.merge(GetFirstSet(nextNode.item));
+	}
+	AppendNodesToTable(nodes);
+	UpdateItemsForProcess();
+	m_table[m_startNonTerminal].at(0) = { Node{ "ok", -1, -1 } };
 }
 
 bool SLR1TableGenerator::IsLastItemInRule(Node const& node) const
@@ -183,6 +183,70 @@ std::set<std::string> SLR1TableGenerator::FindRollUpItems(std::string const& ite
 		}
 	}
 	return set;
+}
+
+void SLR1TableGenerator::UpdateItemsForProcess()
+{
+	for (auto& column : m_table)
+	{
+		auto item = column.second.back();
+		if (item.size() > 0 && std::find(m_processedItems.begin(), m_processedItems.end(), item) == m_processedItems.end() && !IsRolledUp(item))
+		{
+			m_itemsForProcessing.push(item);
+		}
+	}
+}
+
+bool SLR1TableGenerator::NeedAddNewRule() const
+{
+	for (auto item : m_rules.at(0).rightPartOfRule)
+	{
+		if (m_startNonTerminal == item)
+		{
+			return true;
+		}
+	}
+	for (size_t i = 1; i < m_rules.size(); ++i)
+	{
+		for (auto item : m_rules.at(i).rightPartOfRule)
+		{
+			if (m_startNonTerminal == item)
+			{
+				return true;
+			}
+		}
+		if (m_startNonTerminal == m_rules.at(i).nonTerminal)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void SLR1TableGenerator::AddNewRule()
+{
+	for (size_t i = 0; i < m_rules.size(); ++i)
+	{
+		NodesSet firstSet;
+		for (auto& item : m_rules.at(i).firstSet)
+		{
+			firstSet.insert(Node{ item.item, item.ruleNum + 1, item.itemNum });
+		}
+		m_rules.at(i).firstSet = firstSet;
+	}
+
+	NodesSet firstSet;
+	firstSet.insert(Node{ m_startNonTerminal, 0, 0 });
+	firstSet.merge(GetFirstSet(m_startNonTerminal));
+
+	Rule rule;
+	rule.nonTerminal = "<First>";
+	rule.rightPartOfRule = { m_startNonTerminal };
+	m_startNonTerminal = rule.nonTerminal;
+	rule.firstSet = firstSet;
+
+	m_rules.insert(m_rules.begin(), rule);
 }
 
 void SLR1TableGenerator::PrintTable() const
@@ -285,6 +349,11 @@ void SLR1TableGenerator::PrintSimplifiedTable() const
 		}
 		std::cout << std::endl;
 	}
+}
+
+std::vector<SLR1TableGenerator::Rule> SLR1TableGenerator::GetRules() const
+{
+	return m_rules;
 }
 
 SLR1TableGenerator::Rule SLR1TableGenerator::CreateRule(std::string const& input)
