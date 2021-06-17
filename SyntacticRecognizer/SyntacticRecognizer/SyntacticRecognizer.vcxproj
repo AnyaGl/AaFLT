@@ -145,14 +145,16 @@
   <ItemGroup>
     <ClCompile Include="CharSequence.cpp" />
     <ClCompile Include="LL1TableGenerator.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="StringSequence.cpp" />
     <ClCompile Include="SyntacticRecognizer.cpp" />
-    <ClCompile Include="SyntaticRecognizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharSequence.h" />
     <ClInclude Include="IInputSequence.h" />
     <ClInclude Include="LL1TableGenerator.h" />
-    <ClInclude Include="SyntaticRecognizer.h" />
+    <ClInclude Include="StringSequence.h" />
+    <ClInclude Include="SyntacticRecognizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
