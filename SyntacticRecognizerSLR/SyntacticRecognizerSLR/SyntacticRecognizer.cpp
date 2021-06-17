@@ -11,6 +11,24 @@ SyntacticRecognizer::SyntacticRecognizer(std::vector<std::vector<std::string>> c
 
 void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
 {
+	try
+	{
+		TryRecognize(in);
+		std::cout << "ok" << std::endl;
+	}
+	catch (std::exception& e)
+	{
+		std::cout << "Error: " << e.what() << std::endl;
+	}
+}
+
+void SyntacticRecognizer::PrintTracing() const
+{
+	std::cout << m_tracing.str();
+}
+
+void SyntacticRecognizer::TryRecognize(std::shared_ptr<IInputSequence> const& in)
+{
 	while (!in->IsEnd())
 	{
 		auto currItem = in->GetNextItem();
@@ -24,20 +42,7 @@ void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
 
 void SyntacticRecognizer::UpdateCurrentState(std::string const& item)
 {
-	std::cout << "Current item: " << item << "   Current state: " << m_currState << std::endl;
-	std::cout << "States: ";
-	for (auto state : m_states)
-	{
-		std::cout << state << "  ";
-	}
-	std::cout << "\nReaded items: ";
-	for (auto item : m_readedItems)
-	{
-		std::cout << item << "  ";
-	}
-	std::cout << std::endl << std::endl;
-	
-
+	SaveState(item);
 	int columnIndex = GetColumnIndex(item);
 	int rowIndex = GetRowIndex();
 	auto newState = m_table.at(rowIndex).at(columnIndex);
@@ -99,6 +104,22 @@ int SyntacticRecognizer::GetRowIndex() const
 		}
 	}
 	throw std::runtime_error("Unknown state: '" + m_currState + "'");
+}
+
+void SyntacticRecognizer::SaveState(std::string const& item)
+{
+	m_tracing << "Current item: " << item << "   Current state: " << m_currState << "\n";
+	m_tracing << "States: ";
+	for (auto state : m_states)
+	{
+		m_tracing << state << "  ";
+	}
+	m_tracing << "\nReaded items: ";
+	for (auto item : m_readedItems)
+	{
+		m_tracing << item << "  ";
+	}
+	m_tracing << "\n\n";
 }
 
 bool SyntacticRecognizer::IsRollUpState(std::string const& state)
