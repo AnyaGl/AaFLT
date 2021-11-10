@@ -1,0 +1,72 @@
+<MainExpr> - <Expr> <MainExpr>
+<MainExpr> - <Expr>
+
+<Expr> - <Type> Identifier ( <TypedParamsList> ) { <StatementList> }
+<Expr> - <Type> Identifier ( <TypedParamsList> ) { }
+<Expr> - <Type> Identifier ( ) { <StatementList> }
+<Expr> - <Type> Identifier ( ) { }
+
+<TypedParamsList> - <Type> Identifier , <TypedParamsList>
+<TypedParamsList> - <Type> Identifier
+
+<StatementList> - <Statement> <StatementList>
+<StatementList> - <Statement>
+
+<Statement> - <Assign> ;
+<Statement> - <Loop>
+<Statement> - <If>
+<Statement> - return ;
+<Statement> - return <Operation> ;
+<Statement> - break ;
+<Statement> - continue ;
+
+<Assign> - <Type> Identifier = <Operation>
+<Assign> - Identifier = <Operation>
+<Assign> - <Type> Identifier
+
+<Loop> - while ( <Operation> ) { <StatementList> }
+<Loop> - while ( <Operation> ) { }
+<Loop> - for ( <Assign> ; <Operation> ; <Assign> ) { <StatementList> }
+<Loop> - for ( <Assign> ; <Operation> ; <Assign> ) { }
+
+<If> - if ( <Operation> ) { <StatementList> }
+<If> - if ( <Operation> ) { }
+<If> - if ( <Operation> ) { <StatementList> } else { <StatementList> }
+<If> - if ( <Operation> ) { } else { <StatementList> }
+<If> - if ( <Operation> ) { <StatementList> } else { }
+<If> - if ( <Operation> ) { } else { }
+
+<Operation> - <E>
+<E> - <E> Comparison <T>
+<E> - <E> + <T>
+<E> - <E> - <T>
+<E> - <T>
+<T> - <T> * <F>
+<T> - <T> / <F>
+<T> - <F>
+<F> - - <F>
+<F> - ( <E> )
+<F> - <Value>
+<F> - Identifier
+<F> - Identifier ( <ParamsList> )
+<F> - Identifier ( )
+
+<ParamsList> - <E> , <ParamsList>
+<ParamsList> - <E>
+
+<Value> - IntNumber
+<Value> - FixedPointNumber
+<Value> - FloatPointNumber
+<Value> - BinaryNumber
+<Value> - OctalNumber
+<Value> - HexNumber
+<Value> - String
+<Value> - Char
+<Value> - true
+<Value> - false
+
+<Type> - int
+<Type> - double
+<Type> - char
+<Type> - string
+<Type> - bool

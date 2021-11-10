@@ -1,10 +1,11 @@
 #pragma once
 #include "IInputSequence.h"
+#include <sstream>
 
-class CharSequence : public IInputSequence
+class StringSequence : public IInputSequence
 {
 public:
-	CharSequence(std::string const& str);
+	StringSequence(std::string str);
 
 	std::string GetNextItem() override;
 	bool IsEnd() override;
@@ -13,6 +14,6 @@ public:
 	std::string GetLexeme(int index) const override;
 
 private:
-	std::string m_str;
+	std::stringstream m_stream;
 	int m_index = 0;
 };

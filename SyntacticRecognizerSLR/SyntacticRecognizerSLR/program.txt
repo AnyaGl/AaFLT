@@ -1,0 +1,40 @@
+int main()
+{
+	int x = 5;
+	int y;
+	y = 6 + y;
+
+	while (y < 10)
+	{
+		y = y + xAB;
+	}
+
+	for (int i = 1; i != 5; i = i + 1)
+	{
+		bool isGood = ((5 == 5) != (- x < 9));
+		if (isGood)
+		{
+			y = y - 057;
+		}
+		else
+		{
+			y = y + b10101;
+		}
+
+		if (isBad(x == y, 9))
+		{
+			if (isGood)
+			{
+				int isGood;
+				x = - y + - (( 12 * - 13 ) + x + (y / - x));
+			}
+		}
+	}
+
+	return y * x;
+}
+
+bool isBad(bool z, int p)
+{
+	return p != 2;
+}

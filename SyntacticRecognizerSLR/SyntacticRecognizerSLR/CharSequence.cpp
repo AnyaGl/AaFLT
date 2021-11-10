@@ -22,3 +22,18 @@ bool CharSequence::IsEnd()
 {
 	return m_index >= m_str.size();
 }
+
+int CharSequence::GetCurrentLine() const
+{
+	return 0;
+}
+
+int CharSequence::GetCurrentPosition() const
+{
+	return m_index;
+}
+
+std::string CharSequence::GetLexeme(int index) const
+{
+	return std::string();
+}

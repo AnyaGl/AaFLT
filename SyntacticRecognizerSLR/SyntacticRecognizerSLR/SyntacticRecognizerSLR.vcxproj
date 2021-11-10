@@ -144,18 +144,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CharSequence.cpp" />
+    <ClCompile Include="DFAWalker.cpp" />
+    <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="LexerAdapter.cpp" />
     <ClCompile Include="SLR1TableGenerator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SLRRulesCreator.cpp" />
+    <ClCompile Include="StringSequence.cpp" />
+    <ClCompile Include="SymbolsTable.cpp" />
     <ClCompile Include="SyntacticRecognizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharSequence.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="DFAWalker.h" />
     <ClInclude Include="IInputSequence.h" />
+    <ClInclude Include="Lexer.h" />
+    <ClInclude Include="LexerAdapter.h" />
     <ClInclude Include="SLR1TableGenerator.h" />
+    <ClInclude Include="SLRRulesCreator.h" />
+    <ClInclude Include="StringSequence.h" />
+    <ClInclude Include="SymbolsTable.h" />
     <ClInclude Include="SyntacticRecognizer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="changes.txt" />
+    <Text Include="grammar.txt" />
     <Text Include="input.txt" />
+    <Text Include="input1.txt" />
+    <Text Include="input2.txt" />
+    <Text Include="program.txt" />
+    <Text Include="rules.txt" />
+    <Text Include="table.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

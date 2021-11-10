@@ -18,7 +18,8 @@ void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
 	}
 	catch (std::exception& e)
 	{
-		std::cout << "Error: " << e.what() << std::endl;
+		std::cout << e.what() << std::endl
+				  << "Error in " + std::to_string(in->GetCurrentLine()) + " line on " + std::to_string(in->GetCurrentPosition()) + " position" << std::endl;
 	}
 }
 
@@ -29,27 +30,37 @@ void SyntacticRecognizer::PrintTracing() const
 
 void SyntacticRecognizer::TryRecognize(std::shared_ptr<IInputSequence> const& in)
 {
-	while (!in->IsEnd())
+	while (!in->IsEnd() || !m_nextItems.empty() && !(m_currState == "ok" && m_nextItems.front() == "#"))
 	{
-		auto currItem = in->GetNextItem();
-		UpdateCurrentState(currItem);
+		std::string currItem;
+		if (m_nextItems.empty())
+		{
+			currItem = in->GetNextItem();
+			m_isNewItem = true;
+		}
+		else
+		{
+			currItem = m_nextItems.front();
+			m_nextItems.pop();
+		}
+		UpdateCurrentState(currItem, in);
 	}
 	if (m_currState != "ok")
 	{
-		throw std::runtime_error("The sequence does not belong to grammar");
+		throw std::runtime_error("The sequence does not belong to grammar.");
 	}
 }
 
-void SyntacticRecognizer::UpdateCurrentState(std::string const& item)
+void SyntacticRecognizer::UpdateCurrentState(std::string const& item, std::shared_ptr<IInputSequence> const& in)
 {
-	SaveState(item);
+	SaveState(item, in);
 	int columnIndex = GetColumnIndex(item);
 	int rowIndex = GetRowIndex();
 	auto newState = m_table.at(rowIndex).at(columnIndex);
 
 	if (IsRollUpState(newState))
 	{
-		RollUp(std::stoi(newState.erase(0, 1)));
+		RollUp(std::stoi(newState.erase(0, 1)), item);
 	}
 	else
 	{
@@ -59,11 +70,38 @@ void SyntacticRecognizer::UpdateCurrentState(std::string const& item)
 		}
 		m_currState = newState;
 		m_states.push_back(m_currState);
+		UpdateSymbolsTable(item, in);
 		m_readedItems.push_back(item);
 	}
 }
 
-void SyntacticRecognizer::RollUp(int ruleNum)
+void SyntacticRecognizer::UpdateSymbolsTable(std::string const& item, std::shared_ptr<IInputSequence> const& in)
+{
+
+	if (!m_readedItems.empty() && m_readedItems.back() == "<Type>")
+	{
+		m_symbols.AddSymbol(in->GetLexeme(0), in->GetLexeme(1));
+	}
+	else if (item == "(")
+	{
+		m_symbols.CreateNewBlock();
+	}
+	else if (item == "{" && in->GetLexeme(1) != ")" /*&& m_isNewItem*/)
+	{
+		m_symbols.CreateNewBlock();
+	}
+	else if (item != "{" && in->GetLexeme(1) == ")" && m_isNewItem)
+	{
+		m_symbols.RemoveLastBlock();
+		m_isNewItem = false;
+	}
+	else if (item == "}")
+	{
+		m_symbols.RemoveLastBlock();
+	}
+}
+
+void SyntacticRecognizer::RollUp(int ruleNum, std::string const& item)
 {
 	auto rightPartOfRuleSize = m_rules.at(ruleNum).rightPartOfRule.size();
 	rightPartOfRuleSize = m_rules.at(ruleNum).rightPartOfRule.back() == "#" ? rightPartOfRuleSize - 1 : rightPartOfRuleSize;
@@ -79,7 +117,8 @@ void SyntacticRecognizer::RollUp(int ruleNum)
 	}
 	auto newItem = m_rules.at(ruleNum).nonTerminal;
 	m_currState = m_states.back();
-	UpdateCurrentState(newItem);
+	m_nextItems.push(newItem);
+	m_nextItems.push(item);
 }
 
 int SyntacticRecognizer::GetColumnIndex(std::string const& item) const
@@ -106,9 +145,9 @@ int SyntacticRecognizer::GetRowIndex() const
 	throw std::runtime_error("Unknown state: '" + m_currState + "'");
 }
 
-void SyntacticRecognizer::SaveState(std::string const& item)
+void SyntacticRecognizer::SaveState(std::string const& item, std::shared_ptr<IInputSequence> const& in)
 {
-	m_tracing << "Current item: " << item << "   Current state: " << m_currState << "\n";
+	m_tracing << "Current item: " << item << " (" << in->GetLexeme(0) << ")  Current state: " << m_currState << "\n";
 	m_tracing << "States: ";
 	for (auto state : m_states)
 	{
@@ -119,6 +158,8 @@ void SyntacticRecognizer::SaveState(std::string const& item)
 	{
 		m_tracing << item << "  ";
 	}
+	m_tracing << "\nSymbols table:\n"
+			  << m_symbols.GetTableAsString();
 	m_tracing << "\n\n";
 }
 

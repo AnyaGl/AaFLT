@@ -1,10 +1,10 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 #include <map>
-#include <queue>
+#include <set>
 #include <unordered_set>
 #include <vector>
-#include <set>
 
 class SLR1TableGenerator
 {
@@ -38,7 +38,7 @@ public:
 
 	void ReadRulesFromFile(std::istream& in);
 	void GenerateTable();
-	void PrintTable() const;
+	void PrintTable(std::ostream& out = std::cout) const;
 
 	std::vector<std::vector<std::string>> GetSimplifiedTable() const;
 	void PrintSimplifiedTable() const;
@@ -46,7 +46,7 @@ public:
 	std::vector<Rule> GetRules() const;
 
 private:
-	NodesSet GetFirstSet(std::string const& item);
+	NodesSet GetFirstSet(std::string const& item) const;
 	void ProcessNode(Node const& node);
 	void ProcessFirstNode();
 	bool IsLastItemInRule(Node const& node) const;
@@ -60,12 +60,12 @@ private:
 
 	static Rule CreateRule(std::string const& input);
 	static bool IsTerminal(std::string const& item);
-	static void PrintNodes(NodesSet const& nodes);
+	static void PrintNodes(std::ostream& out, NodesSet const& nodes, int maxLength);
 	static bool IsRolledUp(NodesSet const& nodes);
 
 	std::vector<Rule> m_rules;
 	Table m_table;
-	std::queue<NodesSet> m_itemsForProcessing;
+	std::vector<NodesSet> m_itemsForProcessing;
 	std::map<std::string, std::vector<std::string>> m_nextItems;
 	std::vector<NodesSet> m_processedItems;
 	std::string m_startNonTerminal;
