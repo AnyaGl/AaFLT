@@ -1,12 +1,19 @@
+bool isBad(bool z, int p)
+{
+	return p != 2;
+}
+
 int main()
 {
+	bool a = 5 == 2;
+	string isGood;
 	int x = 5;
 	int y;
-	y = 6 + y;
+	y = 6. + y;
 
 	while (y < 10)
 	{
-		y = y + xAB;
+		y = y + 8;
 	}
 
 	for (int i = 1; i != 5; i = i + 1)
@@ -14,11 +21,11 @@ int main()
 		bool isGood = ((5 == 5) != (- x < 9));
 		if (isGood)
 		{
-			y = y - 057;
+			y = y - 57;
 		}
 		else
 		{
-			y = y + b10101;
+			y = y + 1;
 		}
 
 		if (isBad(x == y, 9))
@@ -32,9 +39,4 @@ int main()
 	}
 
 	return y * x;
-}
-
-bool isBad(bool z, int p)
-{
-	return p != 2;
 }

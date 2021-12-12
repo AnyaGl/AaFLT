@@ -44,7 +44,8 @@ std::string SymbolsTable::GetType(std::string const& name) const
 			}
 		}
 	}
-	throw std::exception("unknown symbol");
+	std::string err = "unknown variable: " + name;
+	throw std::exception(err.c_str());
 }
 
 std::string SymbolsTable::GetTableAsString() const
