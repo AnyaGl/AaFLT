@@ -18,6 +18,8 @@ public:
 		std::string value;
 		std::vector<std::unique_ptr<Node>> children;
 		int number = 0;
+		int line = 0;
+		int pos = 0;
 	};
 	SyntacticRecognizer(std::vector<std::vector<std::string>> const& table, std::vector<SLR1TableGenerator::Rule> const& rules);
 

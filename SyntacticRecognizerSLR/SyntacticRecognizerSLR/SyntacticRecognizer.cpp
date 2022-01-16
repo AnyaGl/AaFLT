@@ -32,7 +32,7 @@ std::string ValueToType(std::string const& type)
 	throw;
 }
 
-std::string GetType(std::string const& type1, std::string const& type2)
+std::string GetType(const std::string& type1, const std::string& type2, int line)
 {
 	if (type1 == type2)
 	{
@@ -46,7 +46,13 @@ std::string GetType(std::string const& type1, std::string const& type2)
 	{
 		return type2;
 	}
-	throw std::exception("types are not compatible");
+	std::string s = "types are not compatible at line " + std::to_string(line);
+	throw std::exception(s.c_str());
+}
+
+std::string GetType(const std::unique_ptr<SyntacticRecognizer::Node>& node1, const std::unique_ptr<SyntacticRecognizer::Node>& node2)
+{
+	return GetType(node1->type, node2->type, node1->line);
 }
 
 std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
@@ -57,7 +63,9 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	}
 	if (node->token == "<Assign>" && node->children.size() == 2)
 	{
-		node->type = GetType(GetType(node->children.front()), GetType(node->children.back()));
+		GetType(node->children.front());
+		GetType(node->children.back());
+		node->type = GetType(node->children.front(), node->children.back());
 	}
 	else if (node->token == "<Operation>" && node->children.size() == 1)
 	{
@@ -69,7 +77,9 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	}
 	else if ((node->token == "<E>" || node->token == "<T>") && node->children.size() == 3)
 	{
-		node->type = GetType(GetType(node->children.front()), GetType(node->children.back()));
+		GetType(node->children.front());
+		GetType(node->children.back());
+		node->type = GetType(node->children.front(), node->children.back());
 		if (node->children.at(1)->token == "Comparison")
 		{
 			node->type = "bool";
@@ -86,14 +96,14 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 		}
 		for (auto i = 0; i < inTypes1.size(); ++i)
 		{
-			GetType(inTypes1.at(i), inTypes2.at(i));
+			GetType(inTypes1.at(i), inTypes2.at(i), node->line);
 		}
 		node->type = node->children.front()->type;
 	}
 	else if (node->token == "<F>" && node->children.size() == 2 && node->children.front()->lexeme == "-")
 	{
 		auto type = GetType(node->children.back());
-		GetType("int", type);
+		GetType("int", type, node->line);
 		node->type = type;
 	}
 	else if (node->token == "<F>" && node->children.size() == 2)
@@ -129,7 +139,9 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	}
 	else if (node->token == "<Func>" && node->children.size() >= 2)
 	{
-		node->type = GetType(GetType(node->children.front()), GetType(node->children.back()));
+		GetType(node->children.front());
+		GetType(node->children.back());
+		node->type = GetType(node->children.front(), node->children.back());
 	}
 	else if (node->token == "<ParamsList>" && node->children.size() == 2)
 	{
@@ -143,15 +155,15 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	}
 	else if (node->token == "<Loop>" && node->children.front()->token == "while")
 	{
-		GetType("bool", GetType(node->children.at(1)));
+		GetType("bool", GetType(node->children.at(1)), node->line);
 	}
 	else if (node->token == "<Loop>" && node->children.front()->token == "for")
 	{
-		GetType("bool", GetType(node->children.at(2)));
+		GetType("bool", GetType(node->children.at(2)), node->line);
 	}
 	else if (node->token == "<If>")
 	{
-		GetType("bool", GetType(node->children.at(1)));
+		GetType("bool", GetType(node->children.at(1)), node->line);
 	}
 	return node->type;
 }
@@ -333,6 +345,7 @@ void SyntacticRecognizer::RollUp(int ruleNum, std::string const& item, std::shar
 		m_states.pop_back();
 		m_readedItems.pop_back();
 
+		node->line = m_tree.back()->line;
 		node->children.insert(node->children.begin(), std::move(m_tree.back()));
 		m_tree.pop_back();
 	}
@@ -395,6 +408,8 @@ void SyntacticRecognizer::CreateNewNode(std::string const& item, std::shared_ptr
 		auto node = std::make_unique<Node>();
 		node->token = item;
 		node->number = m_nodeCounter++;
+		node->line = in->GetCurrentLine();
+		node->pos = in->GetCurrentPosition();
 		if (item.at(0) != '<' || item.at(item.size() - 1) != '>')
 		{
 			node->lexeme = in->GetLexeme(0);
@@ -495,6 +510,7 @@ void WriteNodesToGraph(const std::vector<std::unique_ptr<SyntacticRecognizer::No
 				label = "Identifier " + label;
 			}
 		}
+		//label += " {" + std::to_string(node->line) + ", " + std::to_string(node->pos) + "}";
 		writer.PrintVertex(node->number, label, StateType::Nonterminal);
 
 		WriteNodesToGraph(node->children, writer, node->number);
