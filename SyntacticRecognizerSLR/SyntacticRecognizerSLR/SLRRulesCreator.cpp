@@ -15,8 +15,6 @@ SLRRulesCreator::SLRRulesCreator(std::istream& file)
 	CreateRulesFromFile(file);
 
 	GenerateFirstSets();
-
-	PrintRules();
 }
 
 void SLRRulesCreator::PrintRules(std::ostream& out)

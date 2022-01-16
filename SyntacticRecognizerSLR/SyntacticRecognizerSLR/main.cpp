@@ -16,6 +16,7 @@ int WithLexer()
 		return 1;
 	}
 	SLRRulesCreator creator(input);
+	std::cout << "Read rules from file...\n";
 
 	std::fstream file("rules.txt");
 	if (!file.is_open())
@@ -28,6 +29,7 @@ int WithLexer()
 	file.close();
 	std::ifstream rulesF("rules.txt");
 
+	std::cout << "Generate SLR table...\n";
 	SLR1TableGenerator generator;
 	generator.ReadRulesFromFile(rulesF);
 	generator.GenerateTable();
@@ -35,11 +37,8 @@ int WithLexer()
 	auto rules = generator.GetRules();
 
 	std::ofstream tableF("table.txt");
-	generator.PrintTable(tableF);
-	std::cout << "-------------" << std::endl;
-	generator.PrintSimplifiedTable();
-	std::cout << std::endl;
 
+	std::cout << "Recognize program...\n";
 	SyntacticRecognizer recognizer(table, rules);
 	std::ifstream prog("program.txt");
 	if (!prog.is_open())
