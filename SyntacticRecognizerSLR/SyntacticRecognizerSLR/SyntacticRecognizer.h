@@ -12,10 +12,12 @@ public:
 	struct Node
 	{
 		std::string type;
+		std::vector<std::string> inTypes;
 		std::string token;
 		std::string lexeme;
 		std::string value;
 		std::vector<std::unique_ptr<Node>> children;
+		int number = 0;
 	};
 	SyntacticRecognizer(std::vector<std::vector<std::string>> const& table, std::vector<SLR1TableGenerator::Rule> const& rules);
 
@@ -34,6 +36,7 @@ private:
 	void CreateNewNode(std::string const& item, std::shared_ptr<IInputSequence> const& in);
 	void ClearTree(std::vector<std::unique_ptr<Node>>& tree);
 	void CheckTypes(std::vector<std::unique_ptr<Node>>& tree);
+	void SaveTreeToGraph();
 
 
 	static bool IsRollUpState(std::string const& state);
@@ -49,4 +52,5 @@ private:
 	SymbolsTable m_symbols;
 	bool m_isNewItem = false;
 	std::vector<std::unique_ptr<Node>> m_tree;
+	int m_nodeCounter = 0;
 };
