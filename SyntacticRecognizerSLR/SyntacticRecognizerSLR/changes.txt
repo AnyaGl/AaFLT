@@ -55,132 +55,128 @@ R57  -  RollUp57
 R58  -  RollUp58                                                                                            
 R59  -  RollUp59                                                                                            
 R6  -  RollUp6                                                                                             
-R60  -  RollUp60                                                                                            
-R61  -  RollUp61                                                                                            
 R7  -  RollUp7                                                                                             
 R8  -  RollUp8                                                                                             
 R9  -  RollUp9                                                                                             
 S0  -  <First>                                                                                             
-S1  -  string60.0                                                                                          
-S10  -  )3.4 )4.4                                                                                           
-S100  -  Identifier20.1 Identifier18.1                                                                       
-S101  -  =18.2                                                                                               
-S102  -  <Operation>18.3                                                                                     
-S103  -  <StatementList>3.6                                                                                  
-S104  -  }3.7                                                                                                
-S105  -  <Statement>9.0 <Statement>10.0                                                                      
-S106  -  <StatementList>9.1                                                                                  
-S107  -  <Loop>12.0                                                                                          
-S108  -  <If>13.0                                                                                            
-S109  -  <Assign>11.0                                                                                        
-S11  -  {3.5 {4.5                                                                                           
-S110  -  ;11.1                                                                                               
-S111  -  <Type>7.0 <Type>8.0                                                                                 
-S112  -  Identifier7.1 Identifier8.1                                                                         
-S113  -  ,7.2                                                                                                
-S114  -  <TypedParamsList>7.3                                                                                
-S115  -  )6.3 )5.3                                                                                           
-S116  -  {6.4 {5.4                                                                                           
-S117  -  }6.5                                                                                                
-S118  -  <StatementList>5.5                                                                                  
-S119  -  }5.6                                                                                                
-S12  -  }4.6                                                                                                
-S120  -  <MainExpr>0.0                                                                                       
-S121  -  <Expr>2.0 <Expr>1.0                                                                                 
-S122  -  <MainExpr>1.1                                                                                       
-S13  -  while21.0 while22.0                                                                                 
-S14  -  (21.1 (22.1                                                                                         
-S15  -  true55.0                                                                                            
-S16  -  false56.0                                                                                           
-S17  -  String53.0                                                                                          
-S18  -  OctalNumber51.0                                                                                     
-S19  -  IntNumber47.0                                                                                       
-S2  -  int57.0                                                                                             
-S20  -  Identifier44.0 Identifier43.0 Identifier42.0                                                        
-S21  -  (44.1 (43.1                                                                                         
-S22  -  <ParamsList>43.2                                                                                    
-S23  -  )43.3                                                                                               
-S24  -  <E>46.0 <E>34.0 <E>33.0 <E>32.0 <E>45.0                                                             
-S25  -  Comparison32.1                                                                                      
-S26  -  <T>32.2 <T>36.0 <T>37.0                                                                             
-S27  -  /37.1                                                                                               
-S28  -  <F>37.2                                                                                             
-S29  -  *36.1                                                                                               
-S3  -  double58.0                                                                                          
-S30  -  <F>36.2                                                                                             
-S31  -  -34.1                                                                                               
-S32  -  <T>37.0 <T>36.0 <T>34.2                                                                             
-S33  -  ,45.1                                                                                               
-S34  -  <ParamsList>45.2                                                                                    
-S35  -  +33.1                                                                                               
-S36  -  <T>37.0 <T>36.0 <T>33.2                                                                             
-S37  -  )44.2                                                                                               
-S38  -  HexNumber52.0                                                                                       
-S39  -  FloatPointNumber49.0                                                                                
-S4  -  char59.0                                                                                            
-S40  -  FixedPointNumber48.0                                                                                
-S41  -  Char54.0                                                                                            
-S42  -  BinaryNumber50.0                                                                                    
-S43  -  <Value>41.0                                                                                         
-S44  -  <T>36.0 <T>37.0 <T>35.0                                                                             
-S45  -  <Operation>21.2 <Operation>22.2                                                                     
-S46  -  )21.3 )22.3                                                                                         
-S47  -  {21.4 {22.4                                                                                         
-S48  -  }22.5                                                                                               
-S49  -  <StatementList>21.5                                                                                 
-S5  -  bool61.0                                                                                            
-S50  -  }21.6                                                                                               
-S51  -  <F>38.0                                                                                             
-S52  -  <E>31.0 <E>32.0 <E>33.0 <E>34.0                                                                     
-S53  -  -39.0                                                                                               
-S54  -  <F>39.1                                                                                             
-S55  -  (40.0                                                                                               
-S56  -  <E>40.1 <E>32.0 <E>33.0 <E>34.0                                                                     
-S57  -  )40.2                                                                                               
-S58  -  return14.0 return15.0                                                                               
-S59  -  <Operation>15.1                                                                                     
-S6  -  <Type>4.0 <Type>5.0 <Type>6.0 <Type>3.0                                                             
-S60  -  ;15.2                                                                                               
-S61  -  ;14.1                                                                                               
-S62  -  if30.0 if29.0 if28.0 if27.0 if26.0 if25.0                                                           
-S63  -  (25.1 (26.1 (27.1 (28.1 (29.1 (30.1                                                                 
-S64  -  <Operation>25.2 <Operation>26.2 <Operation>27.2 <Operation>28.2 <Operation>29.2 <Operation>30.2     
-S65  -  )25.3 )26.3 )27.3 )28.3 )29.3 )30.3                                                                 
-S66  -  {25.4 {26.4 {27.4 {28.4 {29.4 {30.4                                                                 
-S67  -  }26.5 }28.5 }30.5                                                                                   
-S68  -  else28.6 else30.6                                                                                   
-S69  -  {28.7 {30.7                                                                                         
-S7  -  Identifier4.1 Identifier5.1 Identifier6.1 Identifier3.1                                             
-S70  -  }30.8                                                                                               
-S71  -  <StatementList>28.8                                                                                 
-S72  -  }28.9                                                                                               
-S73  -  <StatementList>25.5 <StatementList>27.5 <StatementList>29.5                                         
-S74  -  }25.6 }27.6 }29.6                                                                                   
-S75  -  else27.7 else29.7                                                                                   
-S76  -  {27.8 {29.8                                                                                         
-S77  -  }29.9                                                                                               
-S78  -  <StatementList>27.9                                                                                 
-S79  -  }27.10                                                                                              
-S8  -  (4.2 (5.2 (6.2 (3.2                                                                                 
-S80  -  for23.0 for24.0                                                                                     
-S81  -  (23.1 (24.1                                                                                         
-S82  -  <Assign>23.2 <Assign>24.2                                                                           
-S83  -  ;23.3 ;24.3                                                                                         
-S84  -  <Operation>23.4 <Operation>24.4                                                                     
-S85  -  ;23.5 ;24.5                                                                                         
-S86  -  <Assign>23.6 <Assign>24.6                                                                           
-S87  -  )23.7 )24.7                                                                                         
-S88  -  {23.8 {24.8                                                                                         
-S89  -  }24.9                                                                                               
-S9  -  <TypedParamsList>3.3 <TypedParamsList>4.3                                                           
-S90  -  <StatementList>23.9                                                                                 
-S91  -  }23.10                                                                                              
-S92  -  continue17.0                                                                                        
-S93  -  ;17.1                                                                                               
-S94  -  break16.0                                                                                           
-S95  -  ;16.1                                                                                               
-S96  -  Identifier19.0                                                                                      
-S97  -  =19.1                                                                                               
-S98  -  <Operation>19.2                                                                                     
-S99  -  <Type>20.0 <Type>18.0                                                                               
+S1  -  string58.0                                                                                          
+S10  -  )3.4                                                                                                
+S100  -  =16.2                                                                                               
+S101  -  <Operation>16.3                                                                                     
+S102  -  <StatementList>3.6                                                                                  
+S103  -  }3.7                                                                                                
+S104  -  <Statement>7.0 <Statement>8.0                                                                       
+S105  -  <StatementList>7.1                                                                                  
+S106  -  <Loop>10.0                                                                                          
+S107  -  <If>11.0                                                                                            
+S108  -  <Assign>9.0                                                                                         
+S109  -  ;9.1                                                                                                
+S11  -  {3.5                                                                                                
+S110  -  <Type>5.0 <Type>6.0                                                                                 
+S111  -  Identifier5.1 Identifier6.1                                                                         
+S112  -  ,5.2                                                                                                
+S113  -  <TypedParamsList>5.3                                                                                
+S114  -  )4.3                                                                                                
+S115  -  {4.4                                                                                                
+S116  -  <StatementList>4.5                                                                                  
+S117  -  }4.6                                                                                                
+S118  -  <Funcs>0.0                                                                                          
+S119  -  <Func>2.0 <Func>1.0                                                                                 
+S12  -  while20.0 while19.0                                                                                 
+S120  -  <Funcs>1.1                                                                                          
+S13  -  (19.1 (20.1                                                                                         
+S14  -  true53.0                                                                                            
+S15  -  false54.0                                                                                           
+S16  -  String51.0                                                                                          
+S17  -  OctalNumber49.0                                                                                     
+S18  -  IntNumber45.0                                                                                       
+S19  -  Identifier42.0 Identifier41.0 Identifier40.0                                                        
+S2  -  int55.0                                                                                             
+S20  -  (42.1 (41.1                                                                                         
+S21  -  <ParamsList>41.2                                                                                    
+S22  -  )41.3                                                                                               
+S23  -  <E>44.0 <E>32.0 <E>31.0 <E>30.0 <E>43.0                                                             
+S24  -  Comparison30.1                                                                                      
+S25  -  <T>30.2 <T>34.0 <T>35.0                                                                             
+S26  -  /35.1                                                                                               
+S27  -  <F>35.2                                                                                             
+S28  -  *34.1                                                                                               
+S29  -  <F>34.2                                                                                             
+S3  -  double56.0                                                                                          
+S30  -  -32.1                                                                                               
+S31  -  <T>35.0 <T>34.0 <T>32.2                                                                             
+S32  -  ,43.1                                                                                               
+S33  -  <ParamsList>43.2                                                                                    
+S34  -  +31.1                                                                                               
+S35  -  <T>35.0 <T>34.0 <T>31.2                                                                             
+S36  -  )42.2                                                                                               
+S37  -  HexNumber50.0                                                                                       
+S38  -  FloatPointNumber47.0                                                                                
+S39  -  FixedPointNumber46.0                                                                                
+S4  -  char57.0                                                                                            
+S40  -  Char52.0                                                                                            
+S41  -  BinaryNumber48.0                                                                                    
+S42  -  <Value>39.0                                                                                         
+S43  -  <T>34.0 <T>35.0 <T>33.0                                                                             
+S44  -  <Operation>19.2 <Operation>20.2                                                                     
+S45  -  )19.3 )20.3                                                                                         
+S46  -  {19.4 {20.4                                                                                         
+S47  -  }20.5                                                                                               
+S48  -  <StatementList>19.5                                                                                 
+S49  -  }19.6                                                                                               
+S5  -  bool59.0                                                                                            
+S50  -  <F>36.0                                                                                             
+S51  -  <E>29.0 <E>30.0 <E>31.0 <E>32.0                                                                     
+S52  -  -37.0                                                                                               
+S53  -  <F>37.1                                                                                             
+S54  -  (38.0                                                                                               
+S55  -  <E>38.1 <E>30.0 <E>31.0 <E>32.0                                                                     
+S56  -  )38.2                                                                                               
+S57  -  return12.0 return13.0                                                                               
+S58  -  <Operation>13.1                                                                                     
+S59  -  ;13.2                                                                                               
+S6  -  <Type>4.0 <Type>3.0                                                                                 
+S60  -  ;12.1                                                                                               
+S61  -  if28.0 if27.0 if26.0 if25.0 if24.0 if23.0                                                           
+S62  -  (28.1 (27.1 (26.1 (25.1 (24.1 (23.1                                                                 
+S63  -  <Operation>23.2 <Operation>24.2 <Operation>25.2 <Operation>26.2 <Operation>27.2 <Operation>28.2     
+S64  -  )23.3 )24.3 )25.3 )26.3 )27.3 )28.3                                                                 
+S65  -  {23.4 {24.4 {25.4 {26.4 {27.4 {28.4                                                                 
+S66  -  }24.5 }26.5 }28.5                                                                                   
+S67  -  else26.6 else28.6                                                                                   
+S68  -  {26.7 {28.7                                                                                         
+S69  -  }28.8                                                                                               
+S7  -  Identifier4.1 Identifier3.1                                                                         
+S70  -  <StatementList>26.8                                                                                 
+S71  -  }26.9                                                                                               
+S72  -  <StatementList>23.5 <StatementList>25.5 <StatementList>27.5                                         
+S73  -  }23.6 }25.6 }27.6                                                                                   
+S74  -  else25.7 else27.7                                                                                   
+S75  -  {25.8 {27.8                                                                                         
+S76  -  }27.9                                                                                               
+S77  -  <StatementList>25.9                                                                                 
+S78  -  }25.10                                                                                              
+S79  -  for21.0 for22.0                                                                                     
+S8  -  (4.2 (3.2                                                                                           
+S80  -  (21.1 (22.1                                                                                         
+S81  -  <Assign>21.2 <Assign>22.2                                                                           
+S82  -  ;21.3 ;22.3                                                                                         
+S83  -  <Operation>21.4 <Operation>22.4                                                                     
+S84  -  ;21.5 ;22.5                                                                                         
+S85  -  <Assign>21.6 <Assign>22.6                                                                           
+S86  -  )21.7 )22.7                                                                                         
+S87  -  {21.8 {22.8                                                                                         
+S88  -  }22.9                                                                                               
+S89  -  <StatementList>21.9                                                                                 
+S9  -  <TypedParamsList>3.3                                                                                
+S90  -  }21.10                                                                                              
+S91  -  continue15.0                                                                                        
+S92  -  ;15.1                                                                                               
+S93  -  break14.0                                                                                           
+S94  -  ;14.1                                                                                               
+S95  -  Identifier17.0                                                                                      
+S96  -  =17.1                                                                                               
+S97  -  <Operation>17.2                                                                                     
+S98  -  <Type>18.0 <Type>16.0                                                                               
+S99  -  Identifier18.1 Identifier16.1                                                                       
 ok  -  ok                                                                                                  

@@ -72,6 +72,9 @@ std::string LexerAdapter::GetNextItem()
 	case CLexer::Token::OperationSign:
 		result = m_lexeme.lexeme;
 		break;
+	case CLexer::Token::Comment:
+		result = GetNextItem();
+		break;
 	default:
 		result = TokenToString(m_lexeme.token);
 		break;

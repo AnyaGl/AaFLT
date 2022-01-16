@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="CharSequence.cpp" />
     <ClCompile Include="DFAWalker.cpp" />
+    <ClCompile Include="DotWriter.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="LexerAdapter.cpp" />
     <ClCompile Include="SLR1TableGenerator.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="CharSequence.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="DFAWalker.h" />
+    <ClInclude Include="DotWriter.h" />
     <ClInclude Include="IInputSequence.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="LexerAdapter.h" />

@@ -1,4 +1,5 @@
 #include "SyntacticRecognizer.h"
+#include "DotWriter.h"
 #include <iostream>
 
 namespace
@@ -74,6 +75,27 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 			node->type = "bool";
 		}
 	}
+	else if (node->token == "<F>" && node->children.size() == 2 && node->children.back()->token == "<ParamsList>")
+	{
+		GetType(node->children.back());
+		auto inTypes1 = node->children.front()->inTypes;
+		auto inTypes2 = node->children.back()->inTypes;
+		if (inTypes1.size() != inTypes2.size())
+		{
+			throw std::exception("types are not compatible");
+		}
+		for (auto i = 0; i < inTypes1.size(); ++i)
+		{
+			GetType(inTypes1.at(i), inTypes2.at(i));
+		}
+		node->type = node->children.front()->type;
+	}
+	else if (node->token == "<F>" && node->children.size() == 2 && node->children.front()->lexeme == "-")
+	{
+		auto type = GetType(node->children.back());
+		GetType("int", type);
+		node->type = type;
+	}
 	else if (node->token == "<F>" && node->children.size() == 2)
 	{
 		node->type = GetType(node->children.back());
@@ -93,8 +115,90 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	else if (node->token == "<Value>")
 	{
 		node->type = ValueToType(node->children.front()->token);
+		node->children.front()->type = node->type;
+	}
+	else if (node->token == "<Statement>" && node->children.size() == 2 && node->children.front()->token == "return")
+	{
+		node->type = GetType(node->children.back());
+	}
+	else if (node->token == "<StatementList>")
+	{
+		auto type1 = GetType(node->children.front());
+		auto type2 = GetType(node->children.back());
+		node->type = type1.empty() ? type2 : type1;
+	}
+	else if (node->token == "<Func>" && node->children.size() >= 2)
+	{
+		node->type = GetType(GetType(node->children.front()), GetType(node->children.back()));
+	}
+	else if (node->token == "<ParamsList>" && node->children.size() == 2)
+	{
+		GetType(node->children.back());
+		node->inTypes = { GetType(node->children.front()) };
+		node->inTypes.insert(node->inTypes.end(), node->children.back()->inTypes.begin(), node->children.back()->inTypes.end());
+	}
+	else if (node->token == "<ParamsList>" && node->children.size() == 1)
+	{
+		node->inTypes = { GetType(node->children.front()) };
+	}
+	else if (node->token == "<Loop>" && node->children.front()->token == "while")
+	{
+		GetType("bool", GetType(node->children.at(1)));
+	}
+	else if (node->token == "<Loop>" && node->children.front()->token == "for")
+	{
+		GetType("bool", GetType(node->children.at(2)));
+	}
+	else if (node->token == "<If>")
+	{
+		GetType("bool", GetType(node->children.at(1)));
 	}
 	return node->type;
+}
+void ClearTree2(std::unique_ptr<SyntacticRecognizer::Node>& parent)
+{
+	int pos = 0;
+	for (auto it = parent->children.begin(); it != parent->children.end();)
+	{
+		auto& node = *it;
+		if (node->token[0] == '<' && node->token != "<First>")
+		{
+			int n = node->children.size();
+			parent->children.insert(parent->children.begin() + pos, std::make_move_iterator(node->children.begin()), std::make_move_iterator(node->children.end()));
+			pos += n;
+
+			it = parent->children.erase(parent->children.begin() + pos);
+		}
+		else
+		{
+			++it;
+			++pos;
+		}
+	}
+
+	for (auto it = parent->children.begin(); it != parent->children.end(); ++it)
+	{
+		ClearTree2(*it);
+	}
+}
+
+void ClearTreeAfterCheckTypes(std::unique_ptr<SyntacticRecognizer::Node>& parent)
+{
+	for (auto it = parent->children.begin(); it != parent->children.end(); ++it)
+	{
+		auto& node = *it;
+		while (node->children.size() == 1)
+		{
+			node = std::move(node->children.front());
+		}
+		it->swap(node);
+		ClearTreeAfterCheckTypes(*it);
+	}
+}
+
+bool IsType(const std::string& str)
+{
+	return str == "int" || str == "double" || str == "char" || str == "string" || str == "bool";
 }
 
 } // namespace
@@ -117,7 +221,7 @@ void SyntacticRecognizer::Recognize(std::shared_ptr<IInputSequence> const& in)
 	catch (std::exception& e)
 	{
 		std::cout << e.what() << std::endl;
-				  //<< "Error in " + std::to_string(in->GetCurrentLine()) + " line on " + std::to_string(in->GetCurrentPosition()) + " position" << std::endl;
+		//<< "Error in " + std::to_string(in->GetCurrentLine()) + " line on " + std::to_string(in->GetCurrentPosition()) + " position" << std::endl;
 	}
 }
 
@@ -145,10 +249,12 @@ void SyntacticRecognizer::TryRecognize(std::shared_ptr<IInputSequence> const& in
 	}
 	ClearTree(m_tree);
 	CheckTypes(m_tree);
+	ClearTreeAfterCheckTypes(m_tree.front());
 	if (m_currState != "ok")
 	{
 		throw std::runtime_error("The sequence does not belong to grammar.");
 	}
+	SaveTreeToGraph();
 }
 
 void SyntacticRecognizer::UpdateCurrentState(std::string const& item, std::shared_ptr<IInputSequence> const& in)
@@ -183,6 +289,14 @@ void SyntacticRecognizer::UpdateSymbolsTable(std::string const& item, std::share
 	{
 		m_symbols.AddSymbol(in->GetLexeme(0), in->GetLexeme(1));
 	}
+	else if (!m_readedItems.empty() && m_readedItems.back() == "<TypedParamsList>")
+	{
+		auto idName = m_symbols.CopyLastBlockToInTypesOfPrevBlock();
+		if (m_tree.size() == 4 && m_tree.at(1)->lexeme == idName)
+		{
+			m_tree.at(1)->inTypes = m_symbols.GetInTypes(idName);
+		}
+	}
 	else if (item == "(")
 	{
 		m_symbols.CreateNewBlock();
@@ -213,6 +327,7 @@ void SyntacticRecognizer::RollUp(int ruleNum, std::string const& item, std::shar
 	}
 
 	auto node = std::make_unique<Node>();
+	node->number = m_nodeCounter++;
 	for (size_t i = 0; i < rightPartOfRuleSize; ++i)
 	{
 		m_states.pop_back();
@@ -279,12 +394,14 @@ void SyntacticRecognizer::CreateNewNode(std::string const& item, std::shared_ptr
 	{
 		auto node = std::make_unique<Node>();
 		node->token = item;
+		node->number = m_nodeCounter++;
 		if (item.at(0) != '<' || item.at(item.size() - 1) != '>')
 		{
 			node->lexeme = in->GetLexeme(0);
 			if (item == "Identifier")
 			{
 				node->type = m_symbols.GetType(node->lexeme);
+				node->inTypes = m_symbols.GetInTypes(node->lexeme);
 			}
 		}
 		m_tree.push_back(std::move(node));
@@ -297,6 +414,11 @@ void SyntacticRecognizer::ClearTree(std::vector<std::unique_ptr<Node>>& tree)
 	for (auto it = tree.begin(); it != tree.end();)
 	{
 		auto& node = *it;
+		if (node->token == "String" || node->token == "Char")
+		{
+			auto x = node->lexeme.substr(1, node->lexeme.size() - 2);
+			node->lexeme = x;
+		}
 		if (node->token == "<Type>" || node->token == "(" || node->token == ")" || node->token == "="
 			|| node->token == "{" || node->token == "}" || node->token == ";" || node->token == ",")
 		{
@@ -314,11 +436,80 @@ void SyntacticRecognizer::CheckTypes(std::vector<std::unique_ptr<Node>>& tree)
 {
 	for (auto& node : tree)
 	{
-		if (node->token == "<Assign>")
+		if (node->token == "<Assign>" || node->token == "<Statement>" || node->token == "<StatementList>" || node->token == "<Func>"
+			|| node->token == "<E>" || node->token == "<T>" || node->token == "<F>"
+			|| node->token == "<Loop>" || node->token == "<If>")
 		{
 			GetType(node);
 		}
 		CheckTypes(node->children);
+	}
+}
+
+void WriteNodesToGraph(const std::vector<std::unique_ptr<SyntacticRecognizer::Node>>& tree, CDotWriter& writer, int parent)
+{
+	for (auto it = tree.begin(); it != tree.end(); ++it)
+	{
+		auto& node = *it;
+		writer.PrintEdge(parent, node->number, "");
+
+		std::string inTypes;
+		for (auto i = 0; i < node->inTypes.size(); ++i)
+		{
+			if (i == 0)
+			{
+				inTypes += "(";
+			}
+			inTypes += node->inTypes.at(i);
+			if (i != node->inTypes.size() - 1)
+			{
+				inTypes += ", ";
+			}
+			else
+			{
+				inTypes += ")";
+			}
+		}
+
+		auto label = node->lexeme;
+		if (node->token[0] == '<')
+		{
+			label = node->token;
+			if (node->token == "<E>" || node->token == "<T>" || node->token == "<F>" || node->token == "<Func>")
+			{
+				label += ":" + node->type;
+			}
+			else if (node->token == "<ParamsList>")
+			{
+				label += inTypes;
+			}
+		}
+		else if (node->token == "Identifier" || node->token == "IntNumber"
+			|| node->token == "FixedPointNumber" || node->token == "FloatPointNumber"
+			|| node->token == "BinaryNumber" || node->token == "OctalNumber"
+			|| node->token == "HexNumber" || node->token == "String" || node->token == "Char")
+		{
+			label = node->lexeme + ":" + node->type + inTypes;
+			if (node->token == "Identifier")
+			{
+				label = "Identifier " + label;
+			}
+		}
+		writer.PrintVertex(node->number, label, StateType::Nonterminal);
+
+		WriteNodesToGraph(node->children, writer, node->number);
+	}
+}
+
+void SyntacticRecognizer::SaveTreeToGraph()
+{
+	std::ofstream out("graph2.dot");
+	CDotWriter writer(out);
+	for (auto it = m_tree.begin(); it != m_tree.end(); ++it)
+	{
+		auto& node = *it;
+		writer.PrintVertex(node->number, node->token, StateType::Initial);
+		WriteNodesToGraph(node->children, writer, node->number);
 	}
 }
 

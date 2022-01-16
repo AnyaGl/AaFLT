@@ -1,10 +1,8 @@
-<MainExpr> - <Expr> <MainExpr>
-<MainExpr> - <Expr>
+<Funcs> - <Func> <Funcs>
+<Funcs> - <Func>
 
-<Expr> - <Type> Identifier ( <TypedParamsList> ) { <StatementList> }
-<Expr> - <Type> Identifier ( <TypedParamsList> ) { }
-<Expr> - <Type> Identifier ( ) { <StatementList> }
-<Expr> - <Type> Identifier ( ) { }
+<Func> - <Type> Identifier ( <TypedParamsList> ) { <StatementList> }
+<Func> - <Type> Identifier ( ) { <StatementList> }
 
 <TypedParamsList> - <Type> Identifier , <TypedParamsList>
 <TypedParamsList> - <Type> Identifier

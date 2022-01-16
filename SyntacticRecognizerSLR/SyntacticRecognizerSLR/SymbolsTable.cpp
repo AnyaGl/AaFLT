@@ -14,7 +14,7 @@ void SymbolsTable::RemoveLastBlock()
 	}
 }
 
-void SymbolsTable::AddSymbol(std::string const& name, std::string const& type)
+void SymbolsTable::AddSymbol(std::string const& name, std::string const& type, const std::vector<std::string>& inTypes)
 {
 	if (m_table.empty())
 	{
@@ -28,7 +28,7 @@ void SymbolsTable::AddSymbol(std::string const& name, std::string const& type)
 			throw std::exception("symbol already exist");
 		}
 	}
-	m_table.back().push_back({name, type});
+	m_table.back().push_back({ name, { type, inTypes } });
 }
 
 std::string SymbolsTable::GetType(std::string const& name) const
@@ -40,7 +40,24 @@ std::string SymbolsTable::GetType(std::string const& name) const
 		{
 			if (pair.first == name)
 			{
-				return pair.second;
+				return pair.second.type;
+			}
+		}
+	}
+	std::string err = "unknown variable: " + name;
+	throw std::exception(err.c_str());
+}
+
+std::vector<std::string> SymbolsTable::GetInTypes(std::string const& name) const
+{
+	for (auto it = m_table.rbegin(); it != m_table.rend(); ++it)
+	{
+		auto block = *it;
+		for (auto pair : block)
+		{
+			if (pair.first == name)
+			{
+				return pair.second.inTypes;
 			}
 		}
 	}
@@ -56,8 +73,31 @@ std::string SymbolsTable::GetTableAsString() const
 		ss << "----------------\n";
 		for (auto pair : block)
 		{
-			ss << pair.first << " - " << pair.second << "\n";
+			ss << pair.first << " - " << pair.second.type << "(";
+			for (auto i = 0; i < pair.second.inTypes.size(); ++i)
+			{
+				ss << pair.second.inTypes.at(i);
+				if (i != pair.second.inTypes.size() - 1)
+				{
+					ss << ", ";
+				}
+			}
+			ss << ")\n";
 		}
 	}
 	return ss.str();
+}
+
+std::string SymbolsTable::CopyLastBlockToInTypesOfPrevBlock()
+{
+	std::vector<std::string> inTypes;
+	if (m_table.size() >= 2)
+	{
+		for (auto s : m_table.back())
+		{
+			inTypes.push_back(s.second.type);
+		}
+		m_table.at(m_table.size() - 2).back().second.inTypes = inTypes;
+	}
+	return m_table.at(m_table.size() - 2).back().first;
 }

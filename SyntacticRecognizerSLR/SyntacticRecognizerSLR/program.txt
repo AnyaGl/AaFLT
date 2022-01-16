@@ -6,7 +6,8 @@ bool isBad(bool z, int p)
 int main()
 {
 	bool a = 5 == 2;
-	string isGood;
+	string isGood = "hello" + " world!";
+	char ch = '1';
 	int x = 5;
 	int y;
 	y = 6. + y;
@@ -38,5 +39,7 @@ int main()
 		}
 	}
 
-	return y * x;
+	return y * x; // comment
+	/* comment
+	*/
 }
