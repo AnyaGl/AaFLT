@@ -1,6 +1,7 @@
 #include "SyntacticRecognizer.h"
 #include "DotWriter.h"
 #include <iostream>
+#include <optional>
 
 namespace
 {
@@ -208,6 +209,62 @@ void ClearTreeAfterCheckTypes(std::unique_ptr<SyntacticRecognizer::Node>& parent
 	}
 }
 
+void MoveOperations(std::unique_ptr<SyntacticRecognizer::Node>& parent)
+{
+	for (auto it = parent->children.begin(); it != parent->children.end(); ++it)
+	{
+		auto& node = *it;
+		if ((node->token == "<E>" || node->token == "<T>") && node->children.size() == 3)
+		{
+			node->lexeme = node->children.at(1)->lexeme;
+			node->token = node->children.at(1)->token;
+			node->children.erase(node->children.begin() + 1);
+		}		
+		else if (node->token == "<F>" && node->children.size() == 2)
+		{
+			node->lexeme = node->children.at(0)->lexeme;
+			node->token = node->children.at(0)->token;
+			node->children.erase(node->children.begin());
+		}
+		else if (node->token == "<If>" && node->children.size() > 3)
+		{
+			node->lexeme = node->children.at(0)->lexeme;
+			node->token = node->children.at(0)->token;
+
+			std::optional<int> elsePos;
+			for (auto i = 0; i < node->children.size(); ++i)
+			{
+				if (elsePos)
+				{
+					auto& elseS = node->children.at(*elsePos);
+					elseS->children.push_back(std::move(node->children.at(i)));
+
+					node->children.erase(node->children.begin() + i);
+				}
+				else if (node->children.at(i)->lexeme == "else")
+				{
+					elsePos = i;
+				}
+			}
+
+			node->children.erase(node->children.begin());
+		}
+		else if ((node->token == "<Loop>" || node->token == "<If>") && node->children.size() > 1)
+		{
+			node->lexeme = node->children.at(0)->lexeme;
+			node->token = node->children.at(0)->token;
+			node->children.erase(node->children.begin());
+		}
+		else if (node->token == "<Statement>" && node->children.size() >= 1 && node->children.front()->lexeme == "return")
+		{
+			node->lexeme = node->children.at(0)->lexeme;
+			node->token = node->children.at(0)->token;
+			node->children.erase(node->children.begin());
+		}
+		MoveOperations(*it);
+	}
+}
+
 bool IsType(const std::string& str)
 {
 	return str == "int" || str == "double" || str == "char" || str == "string" || str == "bool";
@@ -262,6 +319,7 @@ void SyntacticRecognizer::TryRecognize(std::shared_ptr<IInputSequence> const& in
 	ClearTree(m_tree);
 	CheckTypes(m_tree);
 	ClearTreeAfterCheckTypes(m_tree.front());
+	MoveOperations(m_tree.front());
 	if (m_currState != "ok")
 	{
 		throw std::runtime_error("The sequence does not belong to grammar.");
