@@ -10,7 +10,7 @@ int main()
 	char ch = '1';
 	int x = 5;
 	int y;
-	y = 6. + y;
+	y = 6 + y;
 
 	while (y < 10)
 	{
@@ -31,12 +31,12 @@ int main()
 			x = - i;
 		}
 
-		if (isBad(x == y, 9))
+		if (isBad(x == y, 9.))
 		{
 			if (isGood)
 			{
 				int isGood;
-				x = - y + - (( 12 * - 13 ) + x + (y / - x));
+				double x = - y + - (( 12.5 * - 13 ) + x + (y / - x));
 			}
 		}
 	}

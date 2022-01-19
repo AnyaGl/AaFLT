@@ -51,6 +51,20 @@ std::string GetType(const std::string& type1, const std::string& type2, int line
 	throw std::exception(s.c_str());
 }
 
+std::string GetType2(const std::string& type1, const std::string& type2, int line)
+{
+	if (type1 == type2)
+	{
+		return type1;
+	}
+	if (type1 == "double" && type2 == "int")
+	{
+		return type1;
+	}
+	std::string s = "types are not compatible at line " + std::to_string(line);
+	throw std::exception(s.c_str());
+}
+
 std::string GetType(const std::unique_ptr<SyntacticRecognizer::Node>& node1, const std::unique_ptr<SyntacticRecognizer::Node>& node2)
 {
 	return GetType(node1->type, node2->type, node1->line);
@@ -66,7 +80,7 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	{
 		GetType(node->children.front());
 		GetType(node->children.back());
-		node->type = GetType(node->children.front(), node->children.back());
+		node->type = GetType2(node->children.front()->type, node->children.back()->type, node->children.front()->line);
 	}
 	else if (node->token == "<Operation>" && node->children.size() == 1)
 	{
@@ -97,7 +111,7 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 		}
 		for (auto i = 0; i < inTypes1.size(); ++i)
 		{
-			GetType(inTypes1.at(i), inTypes2.at(i), node->line);
+			GetType2(inTypes1.at(i), inTypes2.at(i), node->line);
 		}
 		node->type = node->children.front()->type;
 	}
@@ -143,6 +157,7 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 		GetType(node->children.front());
 		GetType(node->children.back());
 		node->type = GetType(node->children.front(), node->children.back());
+		//node->type = GetType2(node->children.front()->type, node->children.back()->type, node->children.front()->line);
 	}
 	else if (node->token == "<ParamsList>" && node->children.size() == 2)
 	{
@@ -166,6 +181,14 @@ std::string GetType(std::unique_ptr<SyntacticRecognizer::Node>& node)
 	{
 		GetType("bool", GetType(node->children.at(1)), node->line);
 	}
+	//else if (node->token == "Identifier" && node->children.size() == 1 && node->children.front()->token == "<ParamsList>")
+	//{
+	//	auto types = node->inTypes;
+	//	for (auto type : types)
+	//	{
+	//		GetType2(type, GetType(node->children.at(1)), node->line);
+	//	}
+	//}
 	return node->type;
 }
 void ClearTree2(std::unique_ptr<SyntacticRecognizer::Node>& parent)
@@ -544,7 +567,7 @@ void WriteNodesToGraph(const std::vector<std::unique_ptr<SyntacticRecognizer::No
 			}
 		}
 
-		auto label = node->lexeme;
+		auto label = node->lexeme + ":" + node->type;
 		if (node->token[0] == '<')
 		{
 			label = node->token;
